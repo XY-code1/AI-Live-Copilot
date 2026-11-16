@@ -188,7 +188,7 @@ export default function AssetsPage() {
       </div>
 
       {products === null || scripts === null ? (
-        <LoadingBlock rows={3} />
+        loadError ? null : <LoadingBlock rows={3} />
       ) : (
         <>
           {(filter === "all" || filter === "product") &&

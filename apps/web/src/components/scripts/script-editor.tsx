@@ -84,6 +84,7 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
         setVersions(sorted);
         setCurrent(sorted[0] ?? null);
         setDraft(sorted[0]?.sections ?? []);
+        setVerification(null);
       })
       .catch((caught: unknown) => {
         if (!active) return;
@@ -107,6 +108,7 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
     setCurrent(found);
     setDraft(found.sections);
     setSuggestion(null);
+    setVerification(null);
   }
 
   function updateSection(id: string, patch: Partial<ScriptSection>) {

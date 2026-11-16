@@ -22,6 +22,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.script import Script
+
+if TYPE_CHECKING:
     from app.models.comparison import Comparison
 
 
@@ -97,6 +100,9 @@ class Product(Base):
         back_populates="product",
         cascade="all, delete-orphan",
         lazy="selectin",
+    )
+    scripts: Mapped[list["Script"]] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
     )
     comparisons: Mapped[list["Comparison"]] = relationship(
         back_populates="product",

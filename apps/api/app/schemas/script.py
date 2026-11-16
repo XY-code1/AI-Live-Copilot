@@ -31,6 +31,7 @@ class ScriptOut(BaseModel):
     audience: str
     style: str
     status: ScriptStatus
+    verification_status: str
     sections: list[ScriptSectionOut] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime

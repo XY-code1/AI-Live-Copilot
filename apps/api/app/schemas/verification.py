@@ -17,6 +17,7 @@ class VerificationIssueOut(BaseModel):
     message: str
     quote: str | None = None
     suggestion: str | None = None
+    source_reference: str | None = None
     origin: str
 
 
@@ -38,6 +39,7 @@ class VerificationIssueInput(BaseModel):
     message: str = Field(default="", max_length=1000)
     quote: str | None = Field(default=None, max_length=2000)
     suggestion: str | None = Field(default=None, max_length=2000)
+    source_reference: str | None = Field(default=None, max_length=255)
 
 
 class VerificationOutput(BaseModel):

@@ -125,3 +125,61 @@ def test_list_verifications(monkeypatch):
     listing = client.get(f"/api/v1/scripts/{script_id}/verifications")
     assert listing.status_code == 200
     assert len(listing.json()) == 2
+
+
+def test_ai_failure_marks_unverified(monkeypatch):
+    class FailingProvider:
+        async def complete(self, messages, *, response_format=None):
+            raise RuntimeError("timeout")
+
+    client = _client(monkeypatch, FailingProvider())
+    script_id = _script(client)
+    body = client.post(f"/api/v1/scripts/{script_id}/verify").json()
+    assert body["status"] == "unverified"
+    assert "未完成" in body["summary"]
+
+
+def test_status_persisted_as_pass_value(monkeypatch):
+    client = _client(monkeypatch, AI_CLEAN)
+    script_id = _script(client)
+    body = client.post(f"/api/v1/scripts/{script_id}/verify").json()
+    assert body["status"] == "pass"
+    # API and script status agree and use the public value, not the member name.
+    script = client.get(f"/api/v1/scripts/{script_id}").json()
+    assert script["verification_status"] == "pass"
+
+
+def test_rule_hit_overrides_clean_ai_summary(monkeypatch):
+    client = _client(monkeypatch, AI_CLEAN)
+    script_id = _script(client)
+    saved = client.post(
+        f"/api/v1/scripts/{script_id}/versions",
+        json={
+            "sections": [
+                {"kind": "opening", "title": "开场", "content": "全网最低价！"},
+                {"kind": "risk", "title": "风险提示", "content": "下单前请咨询。"},
+            ]
+        },
+    ).json()
+    body = client.post(f"/api/v1/scripts/{saved['id']}/verify").json()
+    assert body["status"] == "issue"
+    assert "规则命中" in body["summary"]
+
+
+def test_issue_without_matching_quote_has_no_section(monkeypatch):
+    payload = {
+        "issues": [
+            {
+                "section_index": 0,
+                "type": "exaggeration",
+                "severity": "medium",
+                "message": "与段落无关的引文",
+                "quote": "根本不在这段里",
+            }
+        ],
+        "summary": "测试。",
+    }
+    client = _client(monkeypatch, payload)
+    script_id = _script(client)
+    body = client.post(f"/api/v1/scripts/{script_id}/verify").json()
+    assert body["issues"][0]["section_id"] is None

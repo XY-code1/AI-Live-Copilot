@@ -58,9 +58,77 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
+type RawProduct = {
+  id: string;
+  workspace_id?: string | null;
+  name: string;
+  category: string;
+  summary: string;
+  price?: number | null;
+  currency: string;
+  status: string;
+  sources: RawProductSource[];
+  attributes: RawProductAttribute[];
+  created_at: string;
+  updated_at: string;
+};
+
+type RawProductSource = {
+  id: string;
+  type: "pdf" | "image" | "url" | "manual";
+  name: string;
+  reference?: string | null;
+  status: string;
+  page_count?: number | null;
+  created_at: string;
+};
+
+type RawProductAttribute = {
+  id: string;
+  label: string;
+  value: string;
+  status: "unconfirmed" | "confirmed" | "doubtful";
+  origin?: string;
+  source_id?: string | null;
+  source_reference?: string | null;
+};
+
+function mapProduct(raw: RawProduct): Product {
+  return {
+    id: raw.id,
+    name: raw.name,
+    category: raw.category,
+    summary: raw.summary,
+    price: raw.price ?? undefined,
+    currency: raw.currency,
+    status: raw.status as Product["status"],
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+    sources: raw.sources.map((source) => ({
+      id: source.id,
+      type: source.type,
+      name: source.name,
+      reference: source.reference ?? undefined,
+      status: source.status as "ready" | "processing" | "failed",
+      page_count: source.page_count ?? null,
+      createdAt: source.created_at,
+    })),
+    attributes: raw.attributes.map((attribute) => ({
+      id: attribute.id,
+      label: attribute.label,
+      value: attribute.value,
+      status: attribute.status,
+      origin: attribute.origin ?? "manual",
+      sourceId: attribute.source_id ?? undefined,
+      sourceReference: attribute.source_reference ?? undefined,
+    })),
+  };
+}
+
 export const productApi = {
-  list: () => request<Product[]>("/products"),
-  get: (id: string) => request<Product>(`/products/${id}`),
+  list: async () => (await request<RawProduct[]>("/products")).map(mapProduct),
+  get: async (id: string) =>
+    mapProduct(await request<RawProduct>(`/products/${id}`)),
   create: (payload: ProductCreatePayload) =>
     request<Product>("/products", {
       method: "POST",
@@ -245,6 +313,7 @@ type RawScript = {
   audience: string;
   style: string;
   status: string;
+  verification_status?: string;
   sections: RawSection[];
   created_at: string;
   updated_at: string;
@@ -274,6 +343,7 @@ function mapScript(raw: RawScript): Script {
     audience: raw.audience,
     style: raw.style,
     status: raw.status as Script["status"],
+    verificationStatus: raw.verification_status ?? "unverified",
     sections: raw.sections.map(mapSection),
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,

@@ -122,7 +122,7 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 **Goal:** decide whether the product is trustworthy.
 
-**Progress (2026-11-16):** rule engine (absolute/compliance wording) + DeepSeek per-section verification against source material, producing a report with typed/severed issues, quotes, suggestions and rule/AI origin; `Script.verification_status`; verification history; editor report UI; **content asset page** aggregates products, scripts (with verification status), and raw sources. Verified end to end with a real DeepSeek call.
+**Progress (2026-11-16):** rule engine (absolute/compliance wording) + DeepSeek per-section verification against source material, producing a report with typed/severed issues, quotes, suggestions and rule/AI origin; `Script.verification_status`; verification history; editor report UI; **content asset page** aggregates products, scripts (with verification status), and raw sources. Verified end to end with a real DeepSeek call. **P5 审计修复：** 核验状态打通到 ScriptOut/前端（修复徽章恒「未核验」）、AI 失败时记为「未核验」而非「已通过」、枚举值持久化统一为 pass、规则命中重写摘要、规则/AI 结果去重、quote 归属校验、核验材料纳入价格与已确认属性、issue 增加 source_reference（迁移 011）、资产页加载态与商品字段映射修复。
 
 **Scope:** detect unsupported claims; detect price/fee inconsistency; detect exaggerated or absolute wording; detect omitted important restrictions; link scripts to raw product materials; retain history; export content.
 
