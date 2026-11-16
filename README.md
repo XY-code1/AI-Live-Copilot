@@ -16,6 +16,8 @@ Creators and operators need to understand product information, identify competit
 
 AI Live Copilot aims to streamline this process with AI-powered content intelligence.
 
+The authoritative engineering reference is [`docs/TECH-STACK.md`](docs/TECH-STACK.md) (eight-layer stack, sequencing, and AI engineering capabilities). This README is the product-level introduction.
+
 ## Core Capabilities
 
 ### 1. Product Intelligence
@@ -67,34 +69,60 @@ Potential future scenarios:
 
 ## Technology Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js, React, TypeScript |
-| UI | Tailwind CSS, shadcn/ui |
-| Backend | Python, FastAPI |
-| Database | PostgreSQL |
-| ORM | SQLAlchemy |
-| Migrations | Alembic |
-| AI Provider | DeepSeek API |
-| AI Architecture | Provider Adapter |
-| Infrastructure | Docker |
-| Future Desktop | Tauri 2 |
-| Future ASR | Cloud ASR |
+| Layer | Technology | Stage |
+|---|---|---|
+| Frontend | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui | P0 |
+| Backend | Python, FastAPI, Pydantic, SQLAlchemy, Alembic | P0 |
+| Database | PostgreSQL | P0 |
+| Cache / broker | Redis | On demand |
+| Vector search | pgvector | Future |
+| AI | DeepSeek API, Provider Adapter, Structured Output | Provider skeleton |
+| File processing | PyMuPDF, OCR Adapter, multimodal model, URL parser | To build |
+| Async tasks | Celery, Redis, background job records | On demand |
+| Infrastructure | Docker, Docker Compose, Git, GitHub, Ruff, ESLint, pytest | P0 (basic) |
+| Desktop | Tauri 2, Rust, WebView | Future |
+| Speech / realtime | Cloud ASR, WebSocket, audio capture | Future |
+
+See [`docs/TECH-STACK.md`](docs/TECH-STACK.md) for per-layer rationale and the full inventory.
+
+## Repository Layout
+
+```
+apps/
+  web/    Next.js + React + TypeScript (Tailwind, shadcn/ui)
+  api/    FastAPI + SQLAlchemy + Alembic (uv)
+docs/
+  TECH-STACK.md              Full technology stack and sequencing
+  adr/0001-v1.1-architecture.md
+  architecture/README.md
+  product/V1.1-SCOPE.md
+compose.yaml                 postgres + api + web
+```
 
 ## Product Roadmap
 
-- [ ] Project infrastructure and development environment
-- [ ] User authentication and workspace management
-- [ ] Product information management
-- [ ] Multi-format product information import
+**P0 — foundation and first vertical slice**
+- [x] Project infrastructure and development environment
+- [ ] First end-to-end slice: product import → parse → AI extraction → PostgreSQL → UI
+- [ ] Product data model and Alembic migrations
+- [ ] Structured-output validation with retry/repair
+- [ ] CI (lint, type check, tests)
+
+**P1 — product depth**
+- [ ] Product information management and multi-format import
 - [ ] Product intelligence engine
 - [ ] Competitive analysis engine
 - [ ] AI livestream script generation
 - [ ] Script factual verification
 - [ ] Script editing and version management
-- [ ] Team collaboration
-- [ ] Windows desktop application
-- [ ] Real-time livestream assistance
+- [ ] OCR / multimodal extraction and async jobs
+- [ ] AI evaluation and observability
+
+**P2 — expansion**
+- [ ] User authentication and team workspaces
+- [ ] pgvector / RAG
+- [ ] Windows desktop application (Tauri 2)
+- [ ] Real-time livestream assistance (Cloud ASR, WebSocket)
 
 ## Product Vision
 
@@ -104,6 +132,6 @@ From understanding products to creating persuasive sales content, and eventually
 
 ---
 
-**Project Status:** Early Development / MVP Planning
+**Project Status:** V1.1 foundation initialized; implementation not yet started. The monorepo, compose stack, and AI provider adapter exist; business features are planned, not built.
 
 **Note:** Features listed in the roadmap are planned capabilities and are not necessarily available in the current version.
