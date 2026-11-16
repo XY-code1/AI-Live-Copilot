@@ -1,4 +1,10 @@
-import type { Product, ProductCreatePayload, ProductSource, SourceText } from "@/types";
+import type {
+  Product,
+  ProductAttribute,
+  ProductCreatePayload,
+  ProductSource,
+  SourceText,
+} from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const API_PREFIX = "/api/v1";
@@ -46,6 +52,18 @@ export const productApi = {
   remove: (id: string) => request<void>(`/products/${id}`, { method: "DELETE" }),
   extract: (id: string) =>
     request<Product>(`/products/${id}/extract`, { method: "POST" }),
+  createUrlSource: (id: string, url: string) =>
+    request<ProductSource>(`/products/${id}/sources/url`, {
+      method: "POST",
+      body: JSON.stringify({ url }),
+    }),
+  addAttribute: (id: string, payload: { label: string; value: string }) =>
+    request<ProductAttribute>(`/products/${id}/attributes`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  deleteAttribute: (id: string) =>
+    request<void>(`/attributes/${id}`, { method: "DELETE" }),
 };
 
 export async function uploadProductSource(

@@ -9,8 +9,9 @@ from app.crud import product as product_crud
 from app.db.session import get_db
 from app.models.product import ProductSource, ProductSourceStatus, ProductSourceType
 from app.schemas.product import ProductSourceOut
-from app.schemas.source import SourceTextOut
+from app.schemas.source import SourceTextOut, UrlSourceCreate
 from app.services.pdf import extract_pdf_text
+from app.services.url import fetch_url_text
 
 router = APIRouter()
 
@@ -63,3 +64,34 @@ def read_source_text(source_id: UUID, db: Session = Depends(get_db)) -> SourceTe
         page_count=source.page_count,
         text=source.content_text or "",
     )
+
+
+@router.post("/products/{product_id}/sources/url", response_model=ProductSourceOut, status_code=201)
+def create_url_source(
+    product_id: UUID,
+    payload: UrlSourceCreate,
+    db: Session = Depends(get_db),
+) -> ProductSourceOut:
+    product = product_crud.get_product(db, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="商品不存在")
+
+    try:
+        title, text = fetch_url_text(payload.url)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    source = ProductSource(
+        product_id=product.id,
+        type=ProductSourceType.url,
+        name=title,
+        reference=payload.url,
+        storage_path=payload.url,
+        status=ProductSourceStatus.ready,
+        content_text=text,
+        page_count=None,
+    )
+    db.add(source)
+    db.commit()
+    db.refresh(source)
+    return source

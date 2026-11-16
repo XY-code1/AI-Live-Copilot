@@ -7,13 +7,16 @@ import {
   ArrowLeft,
   ChevronDown,
   FileText,
+  Globe,
   Image as ImageIcon,
   Link2,
   Pencil,
   PenLine,
+  Plus,
   Sparkles,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
 
 import { ApiError, getSourceText, productApi, uploadProductSource } from "@/lib/api";
@@ -34,6 +37,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ErrorBlock, LoadingBlock } from "@/components/common/state-blocks";
+import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/common/page-header";
 import { formatDate, formatPrice } from "@/lib/format";
 
@@ -73,6 +77,11 @@ export function ProductDetailClient({ productId }: { productId: string }) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [url, setUrl] = useState("");
+  const [urlLoading, setUrlLoading] = useState(false);
+  const [attrLabel, setAttrLabel] = useState("");
+  const [attrValue, setAttrValue] = useState("");
+  const [attrLoading, setAttrLoading] = useState(false);
   const [previews, setPreviews] = useState<Record<string, Preview>>({});
 
   useEffect(() => {
@@ -128,6 +137,52 @@ export function ProductDetailClient({ productId }: { productId: string }) {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleAddUrl() {
+    const target = url.trim();
+    if (!target) return;
+    setUrlLoading(true);
+    setNotice(null);
+    setUploadError(null);
+    try {
+      await productApi.createUrlSource(productId, target);
+      setUrl("");
+      setNotice("链接已导入，可点击 AI 提取。");
+      setReloadKey((current) => current + 1);
+    } catch (caught) {
+      setUploadError(caught instanceof ApiError ? caught.message : "链接导入失败");
+    } finally {
+      setUrlLoading(false);
+    }
+  }
+
+  async function handleAddAttribute() {
+    const label = attrLabel.trim();
+    if (!label) return;
+    setAttrLoading(true);
+    setNotice(null);
+    setUploadError(null);
+    try {
+      await productApi.addAttribute(productId, { label, value: attrValue.trim() });
+      setAttrLabel("");
+      setAttrValue("");
+      setNotice("已添加手动属性。");
+      setReloadKey((current) => current + 1);
+    } catch (caught) {
+      setUploadError(caught instanceof ApiError ? caught.message : "添加属性失败");
+    } finally {
+      setAttrLoading(false);
+    }
+  }
+
+  async function handleDeleteAttribute(attributeId: string) {
+    try {
+      await productApi.deleteAttribute(attributeId);
+      setReloadKey((current) => current + 1);
+    } catch (caught) {
+      setUploadError(caught instanceof ApiError ? caught.message : "删除失败");
     }
   }
 
@@ -262,6 +317,27 @@ export function ProductDetailClient({ productId }: { productId: string }) {
               文件将保存到本地存储，提取文本后可在下方查看。
             </span>
           </div>
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-medium text-muted-foreground">链接导入</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                value={url}
+                onChange={(event) => setUrl(event.target.value)}
+                placeholder="粘贴商品详情页链接"
+                className="max-w-sm"
+                aria-label="商品链接"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddUrl}
+                disabled={urlLoading || !url.trim()}
+              >
+                <Globe /> {urlLoading ? "导入中…" : "导入链接"}
+              </Button>
+            </div>
+          </div>
+
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"
@@ -295,28 +371,76 @@ export function ProductDetailClient({ productId }: { productId: string }) {
             AI 提取结果需保留来源与确认状态，未确认项不得用于宣传。
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col divide-y divide-border">
-          {product.attributes.length === 0 ? (
-            <p className="py-3 text-sm text-muted-foreground">
-              暂无结构化属性，导入资料后由 AI 提取。
-            </p>
-          ) : (
-            product.attributes.map((attribute) => {
-              const meta = confirmationMeta[attribute.status];
-              return (
-                <div
-                  key={attribute.id}
-                  className="flex items-center justify-between gap-4 py-3"
-                >
-                  <span className="text-sm text-muted-foreground">{attribute.label}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium">{attribute.value}</span>
-                    <Badge variant={meta.variant}>{meta.label}</Badge>
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-medium text-muted-foreground">手动添加属性</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <Input
+                value={attrLabel}
+                onChange={(event) => setAttrLabel(event.target.value)}
+                placeholder="字段名，如：购物安排"
+                className="max-w-[12rem]"
+                aria-label="属性名"
+              />
+              <Input
+                value={attrValue}
+                onChange={(event) => setAttrValue(event.target.value)}
+                placeholder="值，如：无购物"
+                className="max-w-[16rem]"
+                aria-label="属性值"
+              />
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleAddAttribute}
+                disabled={attrLoading || !attrLabel.trim()}
+              >
+                <Plus /> 添加
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex flex-col divide-y divide-border border-t border-border">
+            {product.attributes.length === 0 ? (
+              <p className="py-3 text-sm text-muted-foreground">
+                暂无结构化属性，导入资料后由 AI 提取，或手动添加。
+              </p>
+            ) : (
+              product.attributes.map((attribute) => {
+                const meta = confirmationMeta[attribute.status];
+                return (
+                  <div
+                    key={attribute.id}
+                    className="flex items-center justify-between gap-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <span className="text-sm text-muted-foreground">{attribute.label}</span>
+                      {attribute.sourceReference ? (
+                        <p className="truncate text-xs text-muted-foreground">
+                          {attribute.sourceReference}
+                        </p>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{attribute.value}</span>
+                      <Badge variant={meta.variant}>{meta.label}</Badge>
+                      <Badge variant="outline">
+                        {attribute.origin === "ai" ? "AI" : "手动"}
+                      </Badge>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteAttribute(attribute.id)}
+                        aria-label="删除属性"
+                        className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-destructive"
+                      >
+                        <X className="size-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          )}
+                );
+              })
+            )}
+          </div>
         </CardContent>
       </Card>
 

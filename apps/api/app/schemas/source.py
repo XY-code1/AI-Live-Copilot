@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SourceTextOut(BaseModel):
@@ -14,3 +14,7 @@ class SourceTextOut(BaseModel):
     page_count: int | None = None
     text: str
     created_at: datetime | None = None
+
+
+class UrlSourceCreate(BaseModel):
+    url: str = Field(min_length=1, max_length=2048)

@@ -34,8 +34,10 @@ export interface ProductAttribute {
   label: string;
   value: string;
   status: ConfirmationStatus;
+  origin?: string;
   /** Source this attribute was extracted from, if any. */
   sourceId?: ID;
+  sourceReference?: string | null;
 }
 
 export interface Product {

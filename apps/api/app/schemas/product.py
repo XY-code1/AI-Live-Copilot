@@ -20,6 +20,7 @@ class ProductAttributeOut(BaseModel):
     status: ConfirmationStatus
     origin: str
     source_id: UUID | None = None
+    source_reference: str | None = None
 
 
 class ProductSourceOut(BaseModel):
@@ -66,3 +67,9 @@ class ProductUpdate(BaseModel):
     price: float | None = None
     currency: str | None = None
     status: ProductStatus | None = None
+
+
+class AttributeCreate(BaseModel):
+    label: str
+    value: str = ""
+    status: ConfirmationStatus = ConfirmationStatus.unconfirmed
