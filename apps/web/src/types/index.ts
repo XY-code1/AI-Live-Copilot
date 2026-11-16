@@ -77,9 +77,12 @@ export interface Comparison {
   id: ID;
   productId: ID;
   competitorId: ID;
+  status: string;
+  competitor?: Competitor;
   differences: ComparisonDifference[];
   missingInfo: string[];
   createdAt: string;
+  updatedAt?: string;
 }
 
 export type ScriptSectionKind =

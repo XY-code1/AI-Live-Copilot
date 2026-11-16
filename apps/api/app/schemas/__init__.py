@@ -1,3 +1,12 @@
+from app.schemas.comparison import (
+    ComparisonCreate,
+    ComparisonOut,
+    CompetitorCreate,
+    CompetitorOut,
+    CompetitorUpdate,
+    DifferenceCreate,
+    DifferenceOut,
+)
 from app.schemas.extraction import ExtractionAttribute, ExtractionOutput
 from app.schemas.product import (
     AttributeCreate,
@@ -12,6 +21,13 @@ from app.schemas.workspace import WorkspaceOut
 
 __all__ = [
     "AttributeCreate",
+    "ComparisonCreate",
+    "ComparisonOut",
+    "CompetitorCreate",
+    "CompetitorOut",
+    "CompetitorUpdate",
+    "DifferenceCreate",
+    "DifferenceOut",
     "ExtractionAttribute",
     "ExtractionOutput",
     "ProductAttributeOut",

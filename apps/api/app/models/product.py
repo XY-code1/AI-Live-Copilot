@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     DateTime,
@@ -19,6 +20,9 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+if TYPE_CHECKING:
+    from app.models.comparison import Comparison
 
 
 class ProductStatus(str, Enum):
@@ -90,6 +94,11 @@ class Product(Base):
         lazy="selectin",
     )
     attributes: Mapped[list["ProductAttribute"]] = relationship(
+        back_populates="product",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+    comparisons: Mapped[list["Comparison"]] = relationship(
         back_populates="product",
         cascade="all, delete-orphan",
         lazy="selectin",

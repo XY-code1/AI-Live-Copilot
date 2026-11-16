@@ -20,7 +20,7 @@ Build in the order a real SaaS product is built: foundation → usable interface
 | P0 | Engineering foundation | **Done** | Next.js, FastAPI, PostgreSQL, Provider Adapter, Docker, ADRs |
 | P1 | Product interaction & page framework | **Done** | Design system, navigation, all core pages with mock data |
 | P2 | Product knowledge base & ingestion | **Done** | Product CRUD, PDF/image/link/manual import, AI extraction |
-| P3 | Product intelligence & competitive comparison | — | Attribute normalization, diff matrix, evidence-backed advantages |
+| P3 | Product intelligence & competitive comparison | **In progress** | Attribute normalization, diff matrix, evidence-backed advantages |
 | P4 | AI script workspace | — | DeepSeek script generation, editing, versioning, export |
 | P5 | Fact verification & content assets | — | Claim checking, risk wording, traceability, export |
 | P6 | Full business loop & deployment | — | Auth, isolation, security, observability, cloud deploy, E2E |
@@ -90,9 +90,11 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 ---
 
-### P3 — Product intelligence & competitive comparison
+### P3 — Product intelligence & competitive comparison (in progress)
 
 **Goal:** the core differentiation module.
+
+**Progress (2026-11-16):** competitor / comparison / difference models with `evidence_type` + `side` + `missing_info` (migration `0005`), CRUD endpoints, and a real analysis page (create competitors, create comparisons, diff matrix, add/remove differences). Evidence-backed vs speculative is a first-class field.
 
 **Scope:** link own product with competitors; multi-product comparison; attribute normalization; difference matrix; competitive advantage extraction; missing-information detection; evidence traceability.
 

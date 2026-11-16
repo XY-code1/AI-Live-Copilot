@@ -3,8 +3,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.crud import comparison as comparison_crud
 from app.crud import product as crud
 from app.db.session import get_db
+from app.schemas.comparison import ComparisonOut
 from app.schemas.product import ProductCreate, ProductOut, ProductUpdate
 
 router = APIRouter()
@@ -21,6 +23,11 @@ def list_products(
 @router.post("", response_model=ProductOut, status_code=201)
 def create_product(payload: ProductCreate, db: Session = Depends(get_db)) -> ProductOut:
     return crud.create_product(db, payload)
+
+
+@router.get("/{product_id}/comparisons", response_model=list[ComparisonOut])
+def list_comparisons(product_id: UUID, db: Session = Depends(get_db)) -> list[ComparisonOut]:
+    return comparison_crud.list_comparisons(db, product_id)
 
 
 @router.get("/{product_id}", response_model=ProductOut)

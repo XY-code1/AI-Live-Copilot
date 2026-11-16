@@ -1,7 +1,10 @@
 import type {
+  Comparison,
+  Competitor,
   Product,
   ProductAttribute,
   ProductCreatePayload,
+  ComparisonDifference,
   ProductSource,
   SourceText,
 } from "@/types";
@@ -86,3 +89,111 @@ export async function uploadProductSource(
 export function getSourceText(id: string) {
   return request<SourceText>(`/sources/${id}`);
 }
+
+/* ---------- competitive analysis ---------- */
+
+type RawCompetitor = {
+  id: string;
+  name: string;
+  brand: string;
+  price?: number | null;
+  notes: string;
+  created_at: string;
+};
+
+type RawDifference = {
+  id: string;
+  comparison_id: string;
+  field: string;
+  ours: string;
+  theirs: string;
+  evidence_type: "source" | "inferred" | "speculative";
+  side: "ours" | "theirs" | "neutral";
+  note?: string | null;
+  created_at: string;
+};
+
+type RawComparison = {
+  id: string;
+  product_id: string;
+  competitor_id: string;
+  status: string;
+  competitor: RawCompetitor;
+  missing_info: string[];
+  differences: RawDifference[];
+  created_at: string;
+  updated_at: string;
+};
+
+function mapCompetitor(raw: RawCompetitor): Competitor {
+  return {
+    id: raw.id,
+    productName: raw.name,
+    brand: raw.brand,
+    price: raw.price ?? undefined,
+    notes: raw.notes,
+  };
+}
+
+function mapDifference(raw: RawDifference): ComparisonDifference {
+  return {
+    id: raw.id,
+    field: raw.field,
+    ours: raw.ours,
+    theirs: raw.theirs,
+    evidenceType: raw.evidence_type,
+    side: raw.side,
+  };
+}
+
+function mapComparison(raw: RawComparison): Comparison {
+  return {
+    id: raw.id,
+    productId: raw.product_id,
+    competitorId: raw.competitor_id,
+    status: raw.status,
+    competitor: mapCompetitor(raw.competitor),
+    differences: raw.differences.map(mapDifference),
+    missingInfo: raw.missing_info ?? [],
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  };
+}
+
+export const competitorApi = {
+  list: async () =>
+    (await request<RawCompetitor[]>("/competitors")).map(mapCompetitor),
+  create: async (payload: { name: string; brand?: string; price?: number; notes?: string }) =>
+    mapCompetitor(
+      await request<RawCompetitor>("/competitors", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    ),
+  remove: (id: string) => request<void>(`/competitors/${id}`, { method: "DELETE" }),
+};
+
+export const comparisonApi = {
+  listAll: async () =>
+    (await request<RawComparison[]>("/comparisons")).map(mapComparison),
+  listForProduct: async (productId: string) =>
+    (await request<RawComparison[]>(`/products/${productId}/comparisons`)).map(
+      mapComparison,
+    ),
+  create: (productId: string, competitorId: string) =>
+    request<RawComparison>("/comparisons", {
+      method: "POST",
+      body: JSON.stringify({ product_id: productId, competitor_id: competitorId }),
+    }).then(mapComparison),
+  addDifference: (
+    comparisonId: string,
+    payload: { field: string; ours?: string; theirs?: string; evidence_type?: string; side?: string },
+  ) =>
+    request<RawDifference>(`/comparisons/${comparisonId}/differences`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }).then(mapDifference),
+  removeDifference: (differenceId: string) =>
+    request<void>(`/comparisons/differences/${differenceId}`, { method: "DELETE" }),
+  remove: (id: string) => request<void>(`/comparisons/${id}`, { method: "DELETE" }),
+};

@@ -126,6 +126,7 @@ export const comparisons: Comparison[] = [
     id: "cmp-1",
     productId: "p-1",
     competitorId: "c-1",
+    status: "ready",
     missingInfo: ["购物安排", "自费项目"],
     createdAt: "2026-11-15T13:00:00Z",
     differences: [

@@ -1,3 +1,11 @@
+from app.models.comparison import (
+    AdvantageSide,
+    Comparison,
+    ComparisonDifference,
+    ComparisonStatus,
+    Competitor,
+    EvidenceType,
+)
 from app.models.product import (
     ConfirmationStatus,
     Product,
@@ -10,7 +18,13 @@ from app.models.product import (
 from app.models.workspace import Workspace
 
 __all__ = [
+    "AdvantageSide",
+    "Comparison",
+    "ComparisonDifference",
+    "ComparisonStatus",
+    "Competitor",
     "ConfirmationStatus",
+    "EvidenceType",
     "Product",
     "ProductAttribute",
     "ProductSource",
