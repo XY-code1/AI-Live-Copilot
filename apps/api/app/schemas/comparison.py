@@ -11,6 +11,7 @@ class CompetitorCreate(BaseModel):
     brand: str = ""
     price: float | None = None
     notes: str = ""
+    material: str = ""
 
 
 class CompetitorUpdate(BaseModel):
@@ -18,6 +19,7 @@ class CompetitorUpdate(BaseModel):
     brand: str | None = None
     price: float | None = None
     notes: str | None = None
+    material: str | None = None
 
 
 class CompetitorOut(BaseModel):
@@ -29,6 +31,7 @@ class CompetitorOut(BaseModel):
     brand: str
     price: float | None = None
     notes: str
+    material: str
     created_at: datetime
 
 
@@ -39,6 +42,20 @@ class DifferenceCreate(BaseModel):
     evidence_type: EvidenceType = EvidenceType.source
     side: AdvantageSide = AdvantageSide.neutral
     note: str | None = None
+
+
+class GeneratedDifference(BaseModel):
+    field: str = Field(min_length=1, max_length=120)
+    ours: str = ""
+    theirs: str = ""
+    evidence_type: EvidenceType = EvidenceType.source
+    side: AdvantageSide = AdvantageSide.neutral
+    note: str | None = None
+
+
+class ComparisonGenerationOutput(BaseModel):
+    differences: list[GeneratedDifference] = Field(default_factory=list)
+    missing_info: list[str] = Field(default_factory=list)
 
 
 class DifferenceOut(BaseModel):
@@ -52,6 +69,7 @@ class DifferenceOut(BaseModel):
     evidence_type: EvidenceType
     side: AdvantageSide
     note: str | None = None
+    origin: str
     created_at: datetime
 
 

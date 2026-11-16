@@ -11,6 +11,7 @@ from app.schemas.comparison import (
     DifferenceCreate,
     DifferenceOut,
 )
+from app.services.comparison_generation import generate_comparison_differences
 
 router = APIRouter()
 
@@ -63,3 +64,18 @@ def delete_difference(difference_id: UUID, db: Session = Depends(get_db)) -> Non
     if difference is None:
         raise HTTPException(status_code=404, detail="差异项不存在")
     crud.delete_difference(db, difference)
+
+
+@router.post("/{comparison_id}/generate", response_model=ComparisonOut)
+def generate_comparison(comparison_id: UUID, db: Session = Depends(get_db)) -> ComparisonOut:
+    comparison = crud.get_comparison(db, comparison_id)
+    if comparison is None:
+        raise HTTPException(status_code=404, detail="对比不存在")
+    try:
+        generate_comparison_differences(db, comparison)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    db.refresh(comparison)
+    return comparison

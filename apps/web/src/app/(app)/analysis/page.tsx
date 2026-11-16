@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/common/empty-state";
 import { ErrorBlock, LoadingBlock } from "@/components/common/state-blocks";
 import { PageHeader } from "@/components/common/page-header";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const selectClass =
   "h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -34,6 +35,7 @@ export default function AnalysisPage() {
   const [compName, setCompName] = useState("");
   const [compBrand, setCompBrand] = useState("");
   const [compPrice, setCompPrice] = useState("");
+  const [compMaterial, setCompMaterial] = useState("");
   const [compBusy, setCompBusy] = useState(false);
 
   const [newProductId, setNewProductId] = useState("");
@@ -85,10 +87,12 @@ export default function AnalysisPage() {
         name: compName.trim(),
         brand: compBrand.trim(),
         price: compPrice.trim() ? Number(compPrice) : undefined,
+        material: compMaterial.trim(),
       });
       setCompName("");
       setCompBrand("");
       setCompPrice("");
+      setCompMaterial("");
       refresh();
     } catch (caught) {
       setActionError(caught instanceof ApiError ? caught.message : "新建竞品失败");
@@ -156,6 +160,13 @@ export default function AnalysisPage() {
                 <Plus /> 添加竞品
               </Button>
             </div>
+            <Textarea
+              value={compMaterial}
+              onChange={(event) => setCompMaterial(event.target.value)}
+              placeholder="竞品资料（价格、行程、费用等文本，用于 AI 生成差异）"
+              className="min-h-[4rem]"
+              aria-label="竞品资料"
+            />
             {competitors && competitors.length > 0 ? (
               <div className="flex flex-wrap gap-1.5">
                 {competitors.map((competitor) => (

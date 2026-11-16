@@ -1,5 +1,6 @@
 from app.schemas.comparison import (
     ComparisonCreate,
+    ComparisonGenerationOutput,
     ComparisonOut,
     CompetitorCreate,
     CompetitorOut,
@@ -22,6 +23,7 @@ from app.schemas.workspace import WorkspaceOut
 __all__ = [
     "AttributeCreate",
     "ComparisonCreate",
+    "ComparisonGenerationOutput",
     "ComparisonOut",
     "CompetitorCreate",
     "CompetitorOut",

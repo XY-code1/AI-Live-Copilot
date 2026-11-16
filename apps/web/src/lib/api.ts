@@ -163,7 +163,7 @@ function mapComparison(raw: RawComparison): Comparison {
 export const competitorApi = {
   list: async () =>
     (await request<RawCompetitor[]>("/competitors")).map(mapCompetitor),
-  create: async (payload: { name: string; brand?: string; price?: number; notes?: string }) =>
+  create: async (payload: { name: string; brand?: string; price?: number; notes?: string; material?: string }) =>
     mapCompetitor(
       await request<RawCompetitor>("/competitors", {
         method: "POST",
@@ -195,5 +195,9 @@ export const comparisonApi = {
     }).then(mapDifference),
   removeDifference: (differenceId: string) =>
     request<void>(`/comparisons/differences/${differenceId}`, { method: "DELETE" }),
+  generate: async (id: string) =>
+    mapComparison(
+      await request<RawComparison>(`/comparisons/${id}/generate`, { method: "POST" }),
+    ),
   remove: (id: string) => request<void>(`/comparisons/${id}`, { method: "DELETE" }),
 };

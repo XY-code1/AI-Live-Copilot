@@ -94,7 +94,7 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 **Goal:** the core differentiation module.
 
-**Progress (2026-11-16):** competitor / comparison / difference models with `evidence_type` + `side` + `missing_info` (migration `0005`), CRUD endpoints, and a real analysis page (create competitors, create comparisons, diff matrix, add/remove differences). Evidence-backed vs speculative is a first-class field.
+**Progress (2026-11-16):** competitor / comparison / difference models with `evidence_type` + `side` + `missing_info` (migration `0005`), CRUD endpoints, and a real analysis page (create competitors, create comparisons, diff matrix, add/remove differences). Evidence-backed vs speculative is a first-class field. **P3.3 done:** AI 生成差异矩阵 — competitor material + difference origin (migration `0006`), `POST /comparisons/{id}/generate` (DeepSeek structured output, replaces AI differences only), analysis page can generate and edit differences.
 
 **Scope:** link own product with competitors; multi-product comparison; attribute normalization; difference matrix; competitive advantage extraction; missing-information detection; evidence traceability.
 

@@ -60,6 +60,7 @@ export interface Competitor {
   brand: string;
   price?: number;
   notes?: string;
+  material?: string;
 }
 
 export type AdvantageSide = "ours" | "theirs" | "neutral";
@@ -71,6 +72,7 @@ export interface ComparisonDifference {
   theirs: string;
   evidenceType: EvidenceType;
   side: AdvantageSide;
+  origin?: string;
 }
 
 export interface Comparison {

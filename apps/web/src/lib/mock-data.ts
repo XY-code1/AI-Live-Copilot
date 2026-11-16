@@ -118,6 +118,7 @@ export const competitors: Competitor[] = [
     brand: "某旅行社",
     price: 3580,
     notes: "同类线路，价格略高",
+    material: "川西五日游经典版：¥3580，5 天 4 晚，大团。",
   },
 ];
 

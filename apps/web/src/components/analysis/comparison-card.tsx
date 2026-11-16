@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Sparkles, Trash2, X } from "lucide-react";
 
 import { ApiError, comparisonApi } from "@/lib/api";
 import type { Comparison, EvidenceType, AdvantageSide } from "@/types";
@@ -48,6 +48,7 @@ export function ComparisonCard({
   const [evidenceType, setEvidenceType] = useState<EvidenceType>("source");
   const [side, setSide] = useState<AdvantageSide>("neutral");
   const [busy, setBusy] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function addDifference() {
@@ -72,6 +73,19 @@ export function ComparisonCard({
       setError(caught instanceof ApiError ? caught.message : "添加失败");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function generate() {
+    setGenerating(true);
+    setError(null);
+    try {
+      await comparisonApi.generate(comparison.id);
+      onChanged();
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "AI 生成失败");
+    } finally {
+      setGenerating(false);
     }
   }
 
@@ -110,9 +124,14 @@ export function ComparisonCard({
               {competitor?.brand || "—"} · 状态 {comparison.status}
             </CardDescription>
           </div>
-          <Button variant="ghost" size="icon" onClick={removeComparison} aria-label="删除对比">
-            <Trash2 className="size-4" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={generate} disabled={generating}>
+              <Sparkles /> {generating ? "生成中…" : "AI 生成差异"}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={removeComparison} aria-label="删除对比">
+              <Trash2 className="size-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">

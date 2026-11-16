@@ -60,6 +60,8 @@ class Competitor(Base):
     brand: Mapped[str] = mapped_column(String(120), nullable=False, default="")
     price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
     notes: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    # Free-form material for the competitor (pasted text, or later uploads).
+    material: Mapped[str] = mapped_column(Text, nullable=False, default="")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -122,6 +124,8 @@ class ComparisonDifference(Base):
         _ADVANTAGE_SIDE, nullable=False, default=AdvantageSide.neutral
     )
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # "ai" for generated differences, "manual" otherwise.
+    origin: Mapped[str] = mapped_column(String(16), nullable=False, default="manual")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
