@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { FileText, Image as ImageIcon, Link2, PenLine } from "lucide-react";
 import { PageHeader } from "@/components/common/page-header";
 import {
   Card,
@@ -23,6 +24,13 @@ const sourceLabel: Record<ProductSourceType, string> = {
   image: "图片",
   url: "链接",
   manual: "手动",
+};
+
+const sourceIcon: Record<ProductSourceType, typeof FileText> = {
+  pdf: FileText,
+  image: ImageIcon,
+  url: Link2,
+  manual: PenLine,
 };
 
 export default async function ProductDetailPage({
@@ -79,7 +87,13 @@ export default async function ProductDetailPage({
         <CardContent className="flex flex-col gap-3">
           {product.sources.map((source) => (
             <div key={source.id} className="flex items-center gap-3 text-sm">
-              <Badge variant="outline">{sourceLabel[source.type]}</Badge>
+              <Badge variant="outline" className="inline-flex items-center gap-1">
+                {(() => {
+                  const Icon = sourceIcon[source.type];
+                  return <Icon className="size-3.5" />;
+                })()}
+                {sourceLabel[source.type]}
+              </Badge>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">{source.name}</p>
                 {source.reference ? (

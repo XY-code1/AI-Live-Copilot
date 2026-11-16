@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import { PageHeader } from "@/components/common/page-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,9 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { formatDate } from "@/lib/format";
-import { products, scripts } from "@/lib/mock-data";
-import type { ScriptStatus } from "@/types";
+import { products, scripts as initialScripts } from "@/lib/mock-data";
+import type { Script, ScriptStatus } from "@/types";
 
 const statusMeta: Record<ScriptStatus, { label: string; variant: "success" | "warning" | "muted" }> = {
   draft: { label: "草稿", variant: "muted" },
@@ -19,11 +24,34 @@ const statusMeta: Record<ScriptStatus, { label: string; variant: "success" | "wa
 };
 
 export default function ScriptsPage() {
+  const [scripts, setScripts] = useState<Script[]>(initialScripts);
+  const [savedId, setSavedId] = useState<string | null>(null);
+
+  function updateSection(scriptId: string, sectionId: string, content: string) {
+    setScripts((current) =>
+      current.map((script) =>
+        script.id !== scriptId
+          ? script
+          : {
+              ...script,
+              sections: script.sections.map((section) =>
+                section.id === sectionId ? { ...section, content } : section,
+              ),
+            },
+      ),
+    );
+  }
+
+  function save(script: Script) {
+    setSavedId(script.id);
+    window.setTimeout(() => setSavedId(null), 2000);
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="话术工作台"
-        description="生成、编辑与管理直播话术版本。"
+        description="生成、编辑与管理直播话术版本。P1 可编辑与保存（演示）。"
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -40,7 +68,12 @@ export default function ScriptsPage() {
                       {product?.name} · v{script.version} · {formatDate(script.updatedAt)}
                     </CardDescription>
                   </div>
-                  <Badge variant={status.variant}>{status.label}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={status.variant}>{status.label}</Badge>
+                    <Button size="sm" variant="outline" onClick={() => save(script)}>
+                      {savedId === script.id ? "已保存" : "保存"}
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
@@ -56,7 +89,15 @@ export default function ScriptsPage() {
                       <p className="text-xs font-semibold text-muted-foreground">
                         {section.title}
                       </p>
-                      <p className="mt-1 text-sm">{section.content}</p>
+                      <Textarea
+                        className="mt-1 min-h-0 text-sm"
+                        rows={2}
+                        value={section.content}
+                        onChange={(event) =>
+                          updateSection(script.id, section.id, event.target.value)
+                        }
+                        aria-label={section.title}
+                      />
                     </div>
                   ))}
                 </div>
