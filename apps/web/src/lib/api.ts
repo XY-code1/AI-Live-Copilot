@@ -44,6 +44,8 @@ export const productApi = {
       body: JSON.stringify(payload),
     }),
   remove: (id: string) => request<void>(`/products/${id}`, { method: "DELETE" }),
+  extract: (id: string) =>
+    request<Product>(`/products/${id}/extract`, { method: "POST" }),
 };
 
 export async function uploadProductSource(

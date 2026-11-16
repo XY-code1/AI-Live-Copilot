@@ -18,6 +18,7 @@ class ProductAttributeOut(BaseModel):
     label: str
     value: str
     status: ConfirmationStatus
+    origin: str
     source_id: UUID | None = None
 
 

@@ -11,6 +11,10 @@ class ChatMessage:
 
 class AIProvider(ABC):
     @abstractmethod
-    async def complete(self, messages: Sequence[ChatMessage]) -> str:
+    async def complete(
+        self,
+        messages: Sequence[ChatMessage],
+        *,
+        response_format: dict | None = None,
+    ) -> str:
         """Return one model completion."""
-

@@ -144,6 +144,8 @@ class ProductAttribute(Base):
     status: Mapped[ConfirmationStatus] = mapped_column(
         _CONFIRMATION_STATUS, nullable=False, default=ConfirmationStatus.unconfirmed
     )
+    # "ai" for model-extracted values, "manual" otherwise.
+    origin: Mapped[str] = mapped_column(String(16), nullable=False, default="manual")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

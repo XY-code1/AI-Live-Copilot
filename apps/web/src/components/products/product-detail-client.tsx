@@ -11,6 +11,7 @@ import {
   Link2,
   Pencil,
   PenLine,
+  Sparkles,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -70,6 +71,8 @@ export function ProductDetailClient({ productId }: { productId: string }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [extracting, setExtracting] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [previews, setPreviews] = useState<Record<string, Preview>>({});
 
   useEffect(() => {
@@ -125,6 +128,21 @@ export function ProductDetailClient({ productId }: { productId: string }) {
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleExtract() {
+    setExtracting(true);
+    setNotice(null);
+    setUploadError(null);
+    try {
+      const updated = await productApi.extract(productId);
+      setProduct(updated);
+      setNotice(`已提取 ${updated.attributes.length} 个属性，来源与确认状态见下方。`);
+    } catch (caught) {
+      setUploadError(caught instanceof ApiError ? caught.message : "AI 提取失败");
+    } finally {
+      setExtracting(false);
     }
   }
 
@@ -244,9 +262,27 @@ export function ProductDetailClient({ productId }: { productId: string }) {
               文件将保存到本地存储，提取文本后可在下方查看。
             </span>
           </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              onClick={handleExtract}
+              disabled={extracting || !product.sources.some((source) => source.page_count !== null)}
+            >
+              <Sparkles /> {extracting ? "AI 提取中…" : "AI 提取"}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              基于已上传资料的文本，抽取结构化属性并保留来源。
+            </span>
+          </div>
+
           {uploadError ? (
             <p className="text-sm text-destructive" role="alert">
               {uploadError}
+            </p>
+          ) : null}
+          {notice ? (
+            <p className="text-sm text-success" role="status">
+              {notice}
             </p>
           ) : null}
         </CardContent>
