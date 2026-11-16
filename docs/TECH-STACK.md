@@ -208,22 +208,9 @@ Async variant (when enabled): the HTTP request returns a job id; Celery performs
 
 ## 7. Sequencing
 
-**P0 — foundation and first vertical slice**
+Execution phases (`P0–P6`) are defined in [`ROADMAP.md`](ROADMAP.md). The `P0/P1/P2` labels used elsewhere in this document are **technology priorities** and are unrelated to those phases.
 
-- Keep the monorepo, compose stack, and provider adapter.
-- Ship one end-to-end vertical slice before broadening: single product import → parse → AI structured extraction → PostgreSQL → frontend display.
-- Establish schema and Alembic migrations from the first model; do not leave `alembic/versions` empty.
-- Add structured-output validation with retry/repair for malformed LLM responses.
-- Add CI (lint + type check + pytest) before the codebase grows.
-- Remove template residue (default Next.js page metadata and landing content).
-
-**P1 — depth**
-
-Competitive analysis, script generation, fact verification with source evidence, script versioning, OCR/multimodal extraction, async jobs with Redis/Celery, AI evaluation and observability.
-
-**P2 — expansion**
-
-pgvector/RAG, industry modules beyond travel, Tauri desktop client, Cloud ASR and realtime copilot, team billing and metering.
+In short: establish the schema and Alembic migrations from the first model, add structured-output validation with retry/repair for malformed LLM responses, add CI before the codebase grows, and remove template residue. Redis/Celery, pgvector, and desktop/realtime work stay deferred per the phase plan.
 
 ## 8. Explicit non-goals for V1.1
 

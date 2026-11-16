@@ -92,7 +92,8 @@ apps/
   web/    Next.js + React + TypeScript (Tailwind, shadcn/ui)
   api/    FastAPI + SQLAlchemy + Alembic (uv)
 docs/
-  TECH-STACK.md              Full technology stack and sequencing
+  TECH-STACK.md              Full technology stack
+  ROADMAP.md                 Seven-phase MVP execution plan
   adr/0001-v1.1-architecture.md
   architecture/README.md
   product/V1.1-SCOPE.md
@@ -101,28 +102,23 @@ compose.yaml                 postgres + api + web
 
 ## Product Roadmap
 
-**P0 — foundation and first vertical slice**
-- [x] Project infrastructure and development environment
-- [ ] First end-to-end slice: product import → parse → AI extraction → PostgreSQL → UI
-- [ ] Product data model and Alembic migrations
-- [ ] Structured-output validation with retry/repair
-- [ ] CI (lint, type check, tests)
+The execution plan is a seven-phase program. Full goals, tasks, and acceptance criteria live in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-**P1 — product depth**
-- [ ] Product information management and multi-format import
-- [ ] Product intelligence engine
-- [ ] Competitive analysis engine
-- [ ] AI livestream script generation
-- [ ] Script factual verification
-- [ ] Script editing and version management
-- [ ] OCR / multimodal extraction and async jobs
-- [ ] AI evaluation and observability
+| Phase | Name | Status |
+|---|---|---|
+| P0 | Engineering foundation | Done |
+| P1 | Product interaction & page framework | Next |
+| P2 | Product knowledge base & ingestion | — |
+| P3 | Product intelligence & competitive comparison | — |
+| P4 | AI script workspace | — |
+| P5 | Fact verification & content assets | — |
+| P6 | Full business loop & deployment | — |
 
-**P2 — expansion**
-- [ ] User authentication and team workspaces
-- [ ] pgvector / RAG
-- [ ] Windows desktop application (Tauri 2)
-- [ ] Real-time livestream assistance (Cloud ASR, WebSocket)
+**P0 — done:** monorepo, compose stack, FastAPI skeleton, Next.js app, Provider Adapter, ADRs, tech stack reference.
+
+**P1 — next:** design system, navigation, and all core pages (Dashboard, Product Library, Product Import, Product Detail, Competitive Analysis, Script Workspace, Asset Library, Settings) with mock data and empty/loading/error states.
+
+**P2–P6** build the business modules in order: product CRUD and multi-format ingestion → competitive comparison with evidence → DeepSeek script generation and versioning → fact verification and export → authentication, isolation, security, and cloud deployment.
 
 ## Product Vision
 
@@ -132,6 +128,6 @@ From understanding products to creating persuasive sales content, and eventually
 
 ---
 
-**Project Status:** V1.1 foundation initialized; implementation not yet started. The monorepo, compose stack, and AI provider adapter exist; business features are planned, not built.
+**Project Status:** P0 (engineering foundation) complete as of 2026-11-16; P1 (page framework) is next. Monorepo, compose stack, and AI provider adapter exist; business features are planned, not built.
 
 **Note:** Features listed in the roadmap are planned capabilities and are not necessarily available in the current version.
