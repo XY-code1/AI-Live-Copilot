@@ -1,16 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { FileText, Image as ImageIcon, Link2, PenLine, Search } from "lucide-react";
-import { EmptyState } from "@/components/common/empty-state";
-import { PageHeader } from "@/components/common/page-header";
-import { formatPrice } from "@/lib/format";
-import { products } from "@/lib/mock-data";
+import { useRouter } from "next/navigation";
+import { FileText, Image as ImageIcon, Link2, PenLine, Plus, Search } from "lucide-react";
+
+import { ApiError, productApi } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { ConfirmationStatus, Product, ProductSourceType } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { EmptyState } from "@/components/common/empty-state";
+import { ErrorBlock, LoadingBlock } from "@/components/common/state-blocks";
+import { PageHeader } from "@/components/common/page-header";
 import { Input } from "@/components/ui/input";
+import { formatPrice } from "@/lib/format";
 
 const confirmationMeta: Record<ConfirmationStatus, { label: string; variant: "success" | "warning" | "muted" }> = {
   confirmed: { label: "已确认", variant: "success" },
@@ -34,7 +38,9 @@ function ProductCard({ product }: { product: Product }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-sm font-semibold">{product.name}</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">{product.category}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {product.category || "未分类"}
+          </p>
         </div>
         {product.price ? (
           <span className="text-sm font-semibold text-primary">
@@ -43,47 +49,85 @@ function ProductCard({ product }: { product: Product }) {
         ) : null}
       </div>
 
-      <p className="line-clamp-2 text-xs text-muted-foreground">{product.summary}</p>
+      <p className="line-clamp-2 text-xs text-muted-foreground">
+        {product.summary || "暂无简介"}
+      </p>
 
-      <div className="flex flex-wrap gap-1.5">
-        {product.attributes.slice(0, 4).map((attribute) => {
-          const meta = confirmationMeta[attribute.status];
-          return (
-            <Badge key={attribute.id} variant={meta.variant} className="normal-case">
-              {attribute.label}：{attribute.value}
-            </Badge>
-          );
-        })}
-      </div>
+      {product.attributes.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5">
+          {product.attributes.slice(0, 4).map((attribute) => {
+            const meta = confirmationMeta[attribute.status];
+            return (
+              <Badge key={attribute.id} variant={meta.variant} className="normal-case">
+                {attribute.label}：{attribute.value}
+              </Badge>
+            );
+          })}
+        </div>
+      ) : null}
 
-      <div className="flex items-center gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
-        {product.sources.map((source) => {
-          const Icon = sourceIcon[source.type];
-          return (
-            <span key={source.id} className="inline-flex items-center gap-1">
-              <Icon className="size-3.5" />
-              {source.name}
-            </span>
-          );
-        })}
-      </div>
+      {product.sources.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+          {product.sources.map((source) => {
+            const Icon = sourceIcon[source.type];
+            return (
+              <span key={source.id} className="inline-flex items-center gap-1">
+                <Icon className="size-3.5" />
+                {source.name}
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
     </Link>
   );
 }
 
 export default function ProductsPage() {
+  const router = useRouter();
+  const [products, setProducts] = useState<Product[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    productApi
+      .list()
+      .then((data) => {
+        if (active) setProducts(data);
+      })
+      .catch((caught: unknown) => {
+        if (!active) return;
+        setError(caught instanceof ApiError ? caught.message : "加载失败");
+        setProducts([]);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [reloadKey]);
+
+  function load() {
+    setLoading(true);
+    setError(null);
+    setReloadKey((current) => current + 1);
+  }
 
   const filtered = useMemo(() => {
+    if (!products) return [];
     const keyword = query.trim().toLowerCase();
     if (!keyword) return products;
-    return products.filter(
-      (product) =>
-        product.name.toLowerCase().includes(keyword) ||
-        product.category.toLowerCase().includes(keyword) ||
-        product.summary.toLowerCase().includes(keyword),
+    return products.filter((product) =>
+      [product.name, product.category, product.summary]
+        .join(" ")
+        .toLowerCase()
+        .includes(keyword),
     );
-  }, [query]);
+  }, [products, query]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -92,14 +136,11 @@ export default function ProductsPage() {
         description="管理已导入商品及其结构化属性。"
         actions={
           <div className="flex gap-2">
-            <Link
-              href="/products/import"
-              className={buttonVariants({ variant: "outline" })}
-            >
+            <Link href="/products/import" className={buttonVariants({ variant: "outline" })}>
               导入商品
             </Link>
-            <Link href="/products/import" className={buttonVariants()}>
-              新建商品
+            <Link href="/products/new" className={buttonVariants()}>
+              <Plus /> 新建商品
             </Link>
           </div>
         }
@@ -116,20 +157,35 @@ export default function ProductsPage() {
         />
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? <LoadingBlock rows={3} /> : null}
+
+      {error ? <ErrorBlock title="加载失败" description={error} onRetry={load} /> : null}
+
+      {!loading && !error && filtered.length === 0 ? (
         <EmptyState
           icon={Search}
-          title="没有匹配的商品"
-          description="尝试更换关键词，或导入新的商品资料。"
-          actionLabel="导入商品"
+          title={query ? "没有匹配的商品" : "还没有商品"}
+          description={
+            query
+              ? "尝试更换关键词。"
+              : "新建一个商品，或从 PDF 导入商品资料。"
+          }
+          actionLabel={query ? undefined : "新建商品"}
+          onAction={query ? undefined : () => router.push("/products/new")}
         />
-      ) : (
+      ) : null}
+
+      {!loading && !error && filtered.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {filtered.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
-      )}
+      ) : null}
+
+      <p className={cn("text-xs text-muted-foreground", loading && "invisible")}>
+        数据来源：{error ? "加载失败" : "本地 API（/api/v1/products）"}
+      </p>
     </div>
   );
 }

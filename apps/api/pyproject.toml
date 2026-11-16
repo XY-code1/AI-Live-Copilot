@@ -27,3 +27,7 @@ testpaths = ["tests"]
 line-length = 100
 target-version = "py312"
 
+[tool.ruff.lint]
+# FastAPI declares dependencies via `Depends(...)` defaults by design.
+extend-ignore = ["B008"]
+

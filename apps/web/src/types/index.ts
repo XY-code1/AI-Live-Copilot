@@ -134,3 +134,11 @@ export interface Workspace {
   name: string;
   plan: string;
 }
+
+export interface ProductCreatePayload {
+  name: string;
+  category?: string;
+  summary?: string;
+  price?: number;
+  currency?: string;
+}

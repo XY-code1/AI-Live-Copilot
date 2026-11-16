@@ -71,7 +71,7 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 **Goal:** the first real business module.
 
-**Progress (2026-11-16):** initial schema delivered — `workspaces`, `products`, `product_sources`, `product_attributes` with source pointers, confirmation status and reserved `workspace_id`; Alembic migration `0001`; Pydantic schemas aligned with the front-end types; verified by running the migration (SQLite) and `ruff`. Next: product CRUD endpoints.
+**Progress (2026-11-16):** initial schema delivered — `workspaces`, `products`, `product_sources`, `product_attributes` with source pointers, confirmation status and reserved `workspace_id`; Alembic migration `0001`; Pydantic schemas aligned with the front-end types; verified by running the migration (SQLite) and `ruff`. Next: PDF parsing and AI extraction. **Update:** product CRUD endpoints and front-end wiring are done — list/detail/new/edit/delete now use the real API (`/api/v1/products`), verified by pytest and a live API smoke test.
 
 **Order:**
 
