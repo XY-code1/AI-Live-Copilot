@@ -209,7 +209,24 @@ export default function ScriptsPage() {
                       {productName(script.productId)} · v{script.version}
                     </p>
                   </div>
-                  <Badge variant="secondary">{script.status}</Badge>
+                  <div className="flex items-center gap-1.5">
+                    <Badge variant="secondary">{script.status}</Badge>
+                    <Badge
+                      variant={
+                        script.verificationStatus === "issue"
+                          ? "warning"
+                          : script.verificationStatus === "pass"
+                            ? "success"
+                            : "muted"
+                      }
+                    >
+                      {script.verificationStatus === "issue"
+                        ? "核验有问题"
+                        : script.verificationStatus === "pass"
+                          ? "已核验"
+                          : "未核验"}
+                    </Badge>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   <Badge variant="outline">{script.scenario || "日常带货"}</Badge>

@@ -3,11 +3,33 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Plus,
+  Save,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 
-import { ApiError, scriptApi } from "@/lib/api";
-import type { Script, ScriptSection, ScriptSectionKind } from "@/types";
+import { ApiError, scriptApi, verificationApi } from "@/lib/api";
+import type {
+  IssueType,
+  Script,
+  ScriptSection,
+  ScriptSectionKind,
+  ScriptVerification,
+} from "@/types";
 import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ErrorBlock, LoadingBlock } from "@/components/common/state-blocks";
 import { PageHeader } from "@/components/common/page-header";
@@ -26,6 +48,15 @@ const KIND_LABEL: Record<ScriptSectionKind, string> = {
 const selectClass =
   "h-8 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
+const ISSUE_TYPE_LABEL: Record<IssueType, string> = {
+  unsupported_claim: "无资料支持",
+  exaggeration: "夸大表述",
+  absolute_wording: "绝对化表述",
+  price_mismatch: "价格/费用不一致",
+  missing_restriction: "遗漏限制条件",
+  source_missing: "缺少来源",
+};
+
 export function ScriptEditor({ scriptId }: { scriptId: string }) {
   const router = useRouter();
   const [versions, setVersions] = useState<Script[]>([]);
@@ -40,6 +71,8 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
     sectionId: string;
     content: string;
   } | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const [verification, setVerification] = useState<ScriptVerification | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -169,6 +202,20 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
     URL.revokeObjectURL(url);
   }
 
+  async function handleVerify() {
+    if (!current) return;
+    setVerifying(true);
+    setError(null);
+    try {
+      const report = await verificationApi.verify(current.id);
+      setVerification(report);
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "核验失败");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
   async function removeScript() {
     if (!current || !window.confirm("确定删除该话术的所有版本？")) return;
     try {
@@ -198,6 +245,14 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
             >
               <ArrowLeft className="size-4" /> 返回
             </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleVerify}
+              disabled={verifying}
+            >
+              <ShieldCheck /> {verifying ? "核验中…" : "事实核验"}
+            </Button>
             <Button variant="outline" size="sm" onClick={exportMarkdown}>
               导出 Markdown
             </Button>
@@ -233,6 +288,80 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
         <p className="text-sm text-destructive" role="alert">
           {error}
         </p>
+      ) : null}
+
+      {verification ? (
+        <Card
+          className={
+            verification.status === "issue"
+              ? "border-warning/50"
+              : "border-success/40"
+          }
+        >
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck
+                  className={
+                    verification.status === "issue"
+                      ? "size-4 text-warning"
+                      : "size-4 text-success"
+                  }
+                />
+                事实核验报告
+              </CardTitle>
+              <Badge
+                variant={
+                  verification.status === "issue"
+                    ? "warning"
+                    : verification.status === "pass"
+                      ? "success"
+                      : "muted"
+                }
+              >
+                {verification.status === "issue"
+                  ? "发现待核实内容"
+                  : verification.status === "pass"
+                    ? "已通过"
+                    : "未核验"}
+              </Badge>
+            </div>
+            <CardDescription>{verification.summary}</CardDescription>
+          </CardHeader>
+          {verification.issues.length > 0 ? (
+            <CardContent className="flex flex-col gap-3">
+              {verification.issues.map((issue) => (
+                <div
+                  key={issue.id}
+                  className="flex flex-col gap-1 rounded-md border border-border p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      variant={
+                        issue.severity === "high" ? "destructive" : issue.severity === "medium" ? "warning" : "muted"
+                      }
+                    >
+                      {issue.severity === "high" ? "高" : issue.severity === "medium" ? "中" : "低"}
+                    </Badge>
+                    <span className="text-sm font-medium">
+                      {ISSUE_TYPE_LABEL[issue.type]}
+                    </span>
+                    <Badge variant="outline">
+                      {issue.origin === "rule" ? "规则" : "AI"}
+                    </Badge>
+                  </div>
+                  <p className="text-sm">{issue.message}</p>
+                  {issue.quote ? (
+                    <p className="text-xs text-muted-foreground">原文：{issue.quote}</p>
+                  ) : null}
+                  {issue.suggestion ? (
+                    <p className="text-xs text-primary">建议：{issue.suggestion}</p>
+                  ) : null}
+                </div>
+              ))}
+            </CardContent>
+          ) : null}
+        </Card>
       ) : null}
 
       <div className="flex flex-col gap-4">

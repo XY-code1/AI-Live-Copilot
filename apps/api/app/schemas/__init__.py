@@ -26,6 +26,7 @@ from app.schemas.script import (
     SectionRewriteRequest,
 )
 from app.schemas.source import SourceTextOut, UrlSourceCreate
+from app.schemas.verification import ScriptVerificationOut, VerificationIssueOut
 from app.schemas.workspace import WorkspaceOut
 
 __all__ = [
@@ -48,10 +49,12 @@ __all__ = [
     "ScriptGenerateRequest",
     "ScriptOut",
     "ScriptSectionOut",
+    "ScriptVerificationOut",
     "ScriptVersionCreate",
     "SectionRewriteOutput",
     "SectionRewriteRequest",
     "SourceTextOut",
     "UrlSourceCreate",
+    "VerificationIssueOut",
     "WorkspaceOut",
 ]

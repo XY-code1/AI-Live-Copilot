@@ -121,6 +121,7 @@ export interface Script {
   sections: ScriptSection[];
   version: number;
   status: ScriptStatus;
+  verificationStatus?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -166,4 +167,35 @@ export interface SourceText {
   page_count?: number | null;
   text: string;
   created_at?: string;
+}
+
+export type IssueType =
+  | "unsupported_claim"
+  | "exaggeration"
+  | "absolute_wording"
+  | "price_mismatch"
+  | "missing_restriction"
+  | "source_missing";
+
+export type IssueSeverity = "high" | "medium" | "low";
+
+export interface VerificationIssue {
+  id: ID;
+  verificationId: ID;
+  sectionId?: ID | null;
+  type: IssueType;
+  severity: IssueSeverity;
+  message: string;
+  quote?: string | null;
+  suggestion?: string | null;
+  origin: string;
+}
+
+export interface ScriptVerification {
+  id: ID;
+  scriptId: ID;
+  status: "unverified" | "pass" | "issue";
+  summary: string;
+  issues: VerificationIssue[];
+  createdAt: string;
 }

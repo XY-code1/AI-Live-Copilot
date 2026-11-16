@@ -66,6 +66,9 @@ class Script(Base):
     status: Mapped[ScriptStatus] = mapped_column(
         SCRIPT_STATUS, nullable=False, default=ScriptStatus.draft
     )
+    verification_status: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="unverified"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

@@ -22,7 +22,7 @@ Build in the order a real SaaS product is built: foundation → usable interface
 | P2 | Product knowledge base & ingestion | **Done** | Product CRUD, PDF/image/link/manual import, AI extraction |
 | P3 | Product intelligence & competitive comparison | **In progress** | Attribute normalization, diff matrix, evidence-backed advantages |
 | P4 | AI script workspace | **In progress** | DeepSeek script generation, editing, versioning, export |
-| P5 | Fact verification & content assets | — | Claim checking, risk wording, traceability, export |
+| P5 | Fact verification & content assets | **In progress** | Claim checking, risk wording, traceability, export |
 | P6 | Full business loop & deployment | — | Auth, isolation, security, observability, cloud deploy, E2E |
 
 ## 3. Phase details
@@ -118,9 +118,11 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 ---
 
-### P5 — Fact verification & content asset management
+### P5 — Fact verification & content asset management (in progress)
 
 **Goal:** decide whether the product is trustworthy.
+
+**Progress (2026-11-16):** rule engine (absolute/compliance wording) + DeepSeek per-section verification against source material, producing a report with typed/severed issues, quotes, suggestions and rule/AI origin; `Script.verification_status`; verification history; editor report UI. Verified end to end with a real DeepSeek call.
 
 **Scope:** detect unsupported claims; detect price/fee inconsistency; detect exaggerated or absolute wording; detect omitted important restrictions; link scripts to raw product materials; retain history; export content.
 

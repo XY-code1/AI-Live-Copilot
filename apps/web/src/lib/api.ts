@@ -9,7 +9,9 @@ import type {
   Script,
   ScriptSection,
   ScriptSectionKind,
+  ScriptVerification,
   SourceText,
+  VerificationIssue,
 } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -315,4 +317,63 @@ export const scriptApi = {
       },
     ),
   remove: (id: string) => request<void>(`/scripts/${id}`, { method: "DELETE" }),
+};
+
+/* ---------- verification ---------- */
+
+type RawIssue = {
+  id: string;
+  verification_id: string;
+  section_id?: string | null;
+  type: VerificationIssue["type"];
+  severity: VerificationIssue["severity"];
+  message: string;
+  quote?: string | null;
+  suggestion?: string | null;
+  origin: string;
+};
+
+type RawVerification = {
+  id: string;
+  script_id: string;
+  status: "unverified" | "pass" | "issue";
+  summary: string;
+  issues: RawIssue[];
+  created_at: string;
+};
+
+function mapIssue(raw: RawIssue): VerificationIssue {
+  return {
+    id: raw.id,
+    verificationId: raw.verification_id,
+    sectionId: raw.section_id ?? null,
+    type: raw.type,
+    severity: raw.severity,
+    message: raw.message,
+    quote: raw.quote ?? null,
+    suggestion: raw.suggestion ?? null,
+    origin: raw.origin,
+  };
+}
+
+function mapVerification(raw: RawVerification): ScriptVerification {
+  return {
+    id: raw.id,
+    scriptId: raw.script_id,
+    status: raw.status,
+    summary: raw.summary,
+    issues: raw.issues.map(mapIssue),
+    createdAt: raw.created_at,
+  };
+}
+
+export const verificationApi = {
+  verify: async (scriptId: string) =>
+    mapVerification(
+      await request<RawVerification>(`/scripts/${scriptId}/verify`, { method: "POST" }),
+    ),
+  list: async (scriptId: string) =>
+    (await request<RawVerification[]>(`/scripts/${scriptId}/verifications`)).map(
+      mapVerification,
+    ),
 };

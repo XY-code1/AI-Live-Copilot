@@ -171,6 +171,7 @@ export const scripts: Script[] = [
     style: "亲切自然",
     version: 1,
     status: "issue",
+    verificationStatus: "issue",
     createdAt: "2026-11-15T15:00:00Z",
     updatedAt: "2026-11-15T15:30:00Z",
     sections: [

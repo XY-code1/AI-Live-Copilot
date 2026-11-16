@@ -21,6 +21,13 @@ from app.models.script import (
     ScriptSectionKind,
     ScriptStatus,
 )
+from app.models.verification import (
+    IssueSeverity,
+    IssueType,
+    ScriptVerification,
+    VerificationIssue,
+    VerificationStatus,
+)
 from app.models.workspace import Workspace
 
 __all__ = [
@@ -31,6 +38,8 @@ __all__ = [
     "Competitor",
     "ConfirmationStatus",
     "EvidenceType",
+    "IssueSeverity",
+    "IssueType",
     "Product",
     "ProductAttribute",
     "ProductSource",
@@ -41,5 +50,8 @@ __all__ = [
     "ScriptSection",
     "ScriptSectionKind",
     "ScriptStatus",
+    "ScriptVerification",
+    "VerificationIssue",
+    "VerificationStatus",
     "Workspace",
 ]
