@@ -19,7 +19,7 @@ Build in the order a real SaaS product is built: foundation → usable interface
 |---|---|---|---|
 | P0 | Engineering foundation | **Done** | Next.js, FastAPI, PostgreSQL, Provider Adapter, Docker, ADRs |
 | P1 | Product interaction & page framework | **Done** | Design system, navigation, all core pages with mock data |
-| P2 | Product knowledge base & ingestion | **In progress** | Product CRUD, PDF/image/link/manual import, AI extraction |
+| P2 | Product knowledge base & ingestion | **Done** | Product CRUD, PDF/image/link/manual import, AI extraction |
 | P3 | Product intelligence & competitive comparison | — | Attribute normalization, diff matrix, evidence-backed advantages |
 | P4 | AI script workspace | — | DeepSeek script generation, editing, versioning, export |
 | P5 | Fact verification & content assets | — | Claim checking, risk wording, traceability, export |
@@ -67,11 +67,11 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 ---
 
-### P2 — Product knowledge base & ingestion (in progress)
+### P2 — Product knowledge base & ingestion (done)
 
 **Goal:** the first real business module.
 
-**Progress (2026-11-16):** initial schema delivered — `workspaces`, `products`, `product_sources`, `product_attributes` with source pointers, confirmation status and reserved `workspace_id`; Alembic migration `0001`; Pydantic schemas aligned with the front-end types; verified by running the migration (SQLite) and `ruff`. Next: PDF parsing and AI extraction. **Update:** product CRUD endpoints and front-end wiring are done — list/detail/new/edit/delete now use the real API (`/api/v1/products`), verified by pytest and a live API smoke test. **P2.3 done:** PDF upload → PyMuPDF extraction → `ProductSource.content_text/page_count` stored, with a text-reading endpoint and a detail-page upload/preview UI. **P2.4 done:** manual “AI 提取” → DeepSeek structured output (travel fields) → Pydantic validation + retry → `ProductAttribute` with `origin=ai` and `source_id`; AI attributes replace previous AI ones, manual attributes preserved. **P2.5 done:** URL import (fetch + store text), manual attribute add/delete, `ProductAttribute.source_reference` + migration `0004`; detail page can import links, add/delete attributes, and shows origin + source fragment.
+**Progress (2026-11-16):** initial schema delivered — `workspaces`, `products`, `product_sources`, `product_attributes` with source pointers, confirmation status and reserved `workspace_id`; Alembic migration `0001`; Pydantic schemas aligned with the front-end types; verified by running the migration (SQLite) and `ruff`. Core loop done: manual create, PDF upload, link import, manual attributes, AI extraction, source traceability. **Import page is now a real flow** (pick a product → upload PDF / import link). Image OCR remains deferred by decision. **Update:** product CRUD endpoints and front-end wiring are done — list/detail/new/edit/delete now use the real API (`/api/v1/products`), verified by pytest and a live API smoke test. **P2.3 done:** PDF upload → PyMuPDF extraction → `ProductSource.content_text/page_count` stored, with a text-reading endpoint and a detail-page upload/preview UI. **P2.4 done:** manual “AI 提取” → DeepSeek structured output (travel fields) → Pydantic validation + retry → `ProductAttribute` with `origin=ai` and `source_id`; AI attributes replace previous AI ones, manual attributes preserved. **P2.5 done:** URL import (fetch + store text), manual attribute add/delete, `ProductAttribute.source_reference` + migration `0004`; detail page can import links, add/delete attributes, and shows origin + source fragment.
 
 **Order:**
 
