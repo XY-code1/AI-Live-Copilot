@@ -69,6 +69,9 @@ def generate_comparison_differences(
             db.delete(difference)
     db.flush()
 
+    our_source = next((source for source in product.sources if source.content_text), None)
+    source_reference = our_source.reference if our_source else None
+
     created: list[ComparisonDifference] = []
     for item in parsed.differences:
         difference = ComparisonDifference(
@@ -80,6 +83,7 @@ def generate_comparison_differences(
             side=item.side,
             note=item.note,
             origin="ai",
+            source_reference=source_reference,
         )
         db.add(difference)
         created.append(difference)

@@ -70,6 +70,7 @@ class DifferenceOut(BaseModel):
     side: AdvantageSide
     note: str | None = None
     origin: str
+    source_reference: str | None = None
     created_at: datetime
 
 

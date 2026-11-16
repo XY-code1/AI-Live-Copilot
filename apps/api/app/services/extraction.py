@@ -60,12 +60,13 @@ def extract_product_attributes(
             db.delete(attribute)
     db.flush()
 
-    primary_source_id = sources[0].id
+    primary_source = sources[0]
     created: list[ProductAttribute] = []
     for item in parsed.attributes:
         attribute = ProductAttribute(
             product_id=product.id,
-            source_id=primary_source_id,
+            source_id=primary_source.id,
+            source_reference=primary_source.reference,
             label=item.label,
             value=item.value,
             status=item.status,

@@ -110,6 +110,7 @@ type RawDifference = {
   evidence_type: "source" | "inferred" | "speculative";
   side: "ours" | "theirs" | "neutral";
   note?: string | null;
+  source_reference?: string | null;
   created_at: string;
 };
 
@@ -143,6 +144,7 @@ function mapDifference(raw: RawDifference): ComparisonDifference {
     theirs: raw.theirs,
     evidenceType: raw.evidence_type,
     side: raw.side,
+    sourceReference: raw.source_reference ?? null,
   };
 }
 

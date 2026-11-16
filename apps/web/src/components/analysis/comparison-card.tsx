@@ -166,6 +166,11 @@ export function ComparisonCard({
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-medium">{difference.field}</span>
+                    {difference.sourceReference ? (
+                      <span className="text-xs text-muted-foreground">
+                        {difference.sourceReference}
+                      </span>
+                    ) : null}
                     <Badge variant={meta.variant}>{meta.label}</Badge>
                     <Badge variant="outline">{sideMeta[difference.side]?.label}</Badge>
                     <button

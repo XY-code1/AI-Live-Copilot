@@ -1,5 +1,6 @@
 import json
 
+import fitz
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -55,13 +56,23 @@ def _client(monkeypatch, provider_payload=None) -> TestClient:
     return TestClient(app)
 
 
+def _pdf_bytes() -> bytes:
+    document = fitz.open()
+    page = document.new_page()
+    page.insert_text((72, 72), "Chuanxi 5-Day Tour, small group")
+    payload = document.tobytes()
+    document.close()
+    return payload
+
+
 def _setup(client: TestClient) -> str:
     product = client.post(
         "/api/v1/products", json={"name": "川西五日游", "category": "旅游线路"}
     ).json()
     client.post(
-        f"/api/v1/products/{product['id']}/attributes",
-        json={"label": "出行天数", "value": "5 天 4 晚", "status": "confirmed"},
+        f"/api/v1/products/{product['id']}/sources",
+        files={"file": ("行程单.pdf", _pdf_bytes(), "application/pdf")},
+        data={"reference": "第 1 页 · 行程安排"},
     )
     competitor = client.post(
         "/api/v1/competitors",
@@ -86,6 +97,7 @@ def test_generate_writes_differences_and_missing_info(monkeypatch):
     assert body["missing_info"] == ["购物安排"]
     assert body["differences"][0]["field"] == "价格"
     assert body["differences"][0]["origin"] == "ai"
+    assert body["differences"][0]["source_reference"] == "第 1 页 · 行程安排"
 
 
 def test_generate_replaces_previous_ai_differences(monkeypatch):

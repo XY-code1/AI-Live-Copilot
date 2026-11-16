@@ -73,6 +73,7 @@ export interface ComparisonDifference {
   evidenceType: EvidenceType;
   side: AdvantageSide;
   origin?: string;
+  sourceReference?: string | null;
 }
 
 export interface Comparison {

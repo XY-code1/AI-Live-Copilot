@@ -66,6 +66,7 @@ def _create_product_with_pdf(client: TestClient) -> str:
     uploaded = client.post(
         f"/api/v1/products/{product['id']}/sources",
         files={"file": ("行程单.pdf", _pdf_bytes(), "application/pdf")},
+        data={"reference": "第 1-2 页"},
     )
     assert uploaded.status_code == 201
     return product["id"]
@@ -83,6 +84,7 @@ def test_extract_creates_ai_attributes(monkeypatch):
     assert days["status"] == "confirmed"
     assert days["origin"] == "ai"
     assert days["source_id"] is not None
+    assert days["source_reference"] == "第 1-2 页"
 
 
 def test_extract_replaces_previous_ai_attributes(monkeypatch):
