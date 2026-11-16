@@ -18,7 +18,7 @@ Build in the order a real SaaS product is built: foundation → usable interface
 | Phase | Name | Status | Deliverable |
 |---|---|---|---|
 | P0 | Engineering foundation | **Done** | Next.js, FastAPI, PostgreSQL, Provider Adapter, Docker, ADRs |
-| P1 | Product interaction & page framework | Next | Design system, navigation, all core pages with mock data |
+| P1 | Product interaction & page framework | **In progress** | Design system, navigation, all core pages with mock data |
 | P2 | Product knowledge base & ingestion | — | Product CRUD, PDF/image/link/manual import, AI extraction |
 | P3 | Product intelligence & competitive comparison | — | Attribute normalization, diff matrix, evidence-backed advantages |
 | P4 | AI script workspace | — | DeepSeek script generation, editing, versioning, export |
@@ -35,9 +35,11 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 ---
 
-### P1 — Product interaction & page framework (next)
+### P1 — Product interaction & page framework (in progress)
 
 **Goal:** make the product look and feel like a SaaS workbench. No AI integration yet.
+
+**Progress (2026-11-16):** design tokens + shadcn-style components, AppShell (sidebar + topbar), route group, dashboard and product library sample pages, domain types and mock-data contracts are in place. Remaining: accept the visual direction, then fill the remaining pages.
 
 **Pages:**
 
