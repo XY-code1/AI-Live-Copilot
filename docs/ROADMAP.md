@@ -19,7 +19,7 @@ Build in the order a real SaaS product is built: foundation → usable interface
 |---|---|---|---|
 | P0 | Engineering foundation | **Done** | Next.js, FastAPI, PostgreSQL, Provider Adapter, Docker, ADRs |
 | P1 | Product interaction & page framework | **Done** | Design system, navigation, all core pages with mock data |
-| P2 | Product knowledge base & ingestion | — | Product CRUD, PDF/image/link/manual import, AI extraction |
+| P2 | Product knowledge base & ingestion | **In progress** | Product CRUD, PDF/image/link/manual import, AI extraction |
 | P3 | Product intelligence & competitive comparison | — | Attribute normalization, diff matrix, evidence-backed advantages |
 | P4 | AI script workspace | — | DeepSeek script generation, editing, versioning, export |
 | P5 | Fact verification & content assets | — | Claim checking, risk wording, traceability, export |
@@ -67,9 +67,11 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 ---
 
-### P2 — Product knowledge base & ingestion
+### P2 — Product knowledge base & ingestion (in progress)
 
 **Goal:** the first real business module.
+
+**Progress (2026-11-16):** initial schema delivered — `workspaces`, `products`, `product_sources`, `product_attributes` with source pointers, confirmation status and reserved `workspace_id`; Alembic migration `0001`; Pydantic schemas aligned with the front-end types; verified by running the migration (SQLite) and `ruff`. Next: product CRUD endpoints.
 
 **Order:**
 
