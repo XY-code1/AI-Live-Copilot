@@ -6,6 +6,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
     Numeric,
     String,
     Text,
@@ -110,6 +111,9 @@ class ProductSource(Base):
     reference: Mapped[str | None] = mapped_column(String(255), nullable=True)
     # Local path or remote URL. Storage policy is local disk for the MVP.
     storage_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Text extracted from the file (PDF) so it can be traced and searched later.
+    content_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    page_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
     status: Mapped[ProductSourceStatus] = mapped_column(
         _SOURCE_STATUS, nullable=False, default=ProductSourceStatus.ready
     )

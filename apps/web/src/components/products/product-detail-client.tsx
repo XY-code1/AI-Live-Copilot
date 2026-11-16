@@ -1,20 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  ChevronDown,
   FileText,
   Image as ImageIcon,
   Link2,
   Pencil,
   PenLine,
   Trash2,
+  Upload,
 } from "lucide-react";
 
-import { ApiError, productApi } from "@/lib/api";
-import type { ConfirmationStatus, Product, ProductSourceType } from "@/types";
+import { ApiError, getSourceText, productApi, uploadProductSource } from "@/lib/api";
+import type {
+  ConfirmationStatus,
+  Product,
+  ProductSource,
+  ProductSourceType,
+  SourceText,
+} from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,15 +56,21 @@ const sourceIcon: Record<ProductSourceType, typeof FileText> = {
   manual: PenLine,
 };
 
+type Preview = { loading: boolean; text?: string; error?: string };
+
 export function ProductDetailClient({ productId }: { productId: string }) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [state, setState] = useState<"loading" | "error" | "notfound" | "ready">(
     "loading",
   );
+  const [reloadKey, setReloadKey] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
-  const [reloadKey, setReloadKey] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [previews, setPreviews] = useState<Record<string, Preview>>({});
 
   useEffect(() => {
     let active = true;
@@ -98,33 +112,69 @@ export function ProductDetailClient({ productId }: { productId: string }) {
     }
   }
 
+  async function handleUpload(list: FileList | null) {
+    const file = list?.[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      await uploadProductSource(productId, file);
+      setReloadKey((current) => current + 1);
+    } catch (caught) {
+      setUploadError(caught instanceof ApiError ? caught.message : "上传失败");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function togglePreview(source: ProductSource) {
+    if (previews[source.id]?.text) {
+      setPreviews((current) => {
+        const next = { ...current };
+        delete next[source.id];
+        return next;
+      });
+      return;
+    }
+    setPreviews((current) => ({
+      ...current,
+      [source.id]: { loading: true },
+    }));
+    try {
+      const text: SourceText = await getSourceText(source.id);
+      setPreviews((current) => ({
+        ...current,
+        [source.id]: { loading: false, text: text.text },
+      }));
+    } catch (caught) {
+      setPreviews((current) => ({
+        ...current,
+        [source.id]: {
+          loading: false,
+          error: caught instanceof ApiError ? caught.message : "读取失败",
+        },
+      }));
+    }
+  }
+
   if (state === "loading") {
-    return (
-      <div className="flex flex-col gap-4">
-        <LoadingBlock rows={4} />
-      </div>
-    );
+    return <LoadingBlock rows={4} />;
   }
 
   if (state === "notfound") {
     return (
-      <div className="flex flex-col gap-4">
-        <ErrorBlock
-          title="商品不存在"
-          description="该商品可能已被删除。"
-          onRetry={() => router.push("/products")}
-        />
-      </div>
+      <ErrorBlock
+        title="商品不存在"
+        description="该商品可能已被删除。"
+        onRetry={() => router.push("/products")}
+      />
     );
   }
 
   if (state === "error" || !product) {
     return (
-      <ErrorBlock
-        title="加载失败"
-        description="无法加载商品详情，请重试。"
-        onRetry={retry}
-      />
+      <ErrorBlock title="加载失败" description="无法加载商品详情，请重试。" onRetry={retry} />
     );
   }
 
@@ -165,6 +215,42 @@ export function ProductDetailClient({ productId }: { productId: string }) {
           {actionError}
         </p>
       ) : null}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>上传资料</CardTitle>
+          <CardDescription>
+            支持 PDF。上传后自动提取文本并保存，供后续 AI 结构化提取使用。
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              className="hidden"
+              onChange={(event) => handleUpload(event.target.files)}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              <Upload /> {uploading ? "上传中…" : "选择 PDF"}
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              文件将保存到本地存储，提取文本后可在下方查看。
+            </span>
+          </div>
+          {uploadError ? (
+            <p className="text-sm text-destructive" role="alert">
+              {uploadError}
+            </p>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -209,21 +295,53 @@ export function ProductDetailClient({ productId }: { productId: string }) {
           ) : (
             product.sources.map((source) => {
               const Icon = sourceIcon[source.type];
+              const preview = previews[source.id];
+              const hasText = source.page_count !== null || preview?.text;
               return (
-                <div key={source.id} className="flex items-center gap-3 text-sm">
-                  <Badge variant="outline" className="inline-flex items-center gap-1">
-                    <Icon className="size-3.5" />
-                    {sourceLabel[source.type]}
-                  </Badge>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{source.name}</p>
-                    {source.reference ? (
-                      <p className="text-xs text-muted-foreground">{source.reference}</p>
+                <div key={source.id} className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 text-sm">
+                    <Badge variant="outline" className="inline-flex items-center gap-1">
+                      <Icon className="size-3.5" />
+                      {sourceLabel[source.type]}
+                    </Badge>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium">{source.name}</p>
+                      {source.reference ? (
+                        <p className="text-xs text-muted-foreground">{source.reference}</p>
+                      ) : null}
+                    </div>
+                    {source.page_count !== null ? (
+                      <span className="text-xs text-muted-foreground">
+                        {source.page_count} 页
+                      </span>
+                    ) : null}
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(source.createdAt)}
+                    </span>
+                    {hasText ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => togglePreview(source)}
+                      >
+                        查看文本
+                        <ChevronDown
+                          className={`size-4 transition-transform ${preview?.text ? "rotate-180" : ""}`}
+                        />
+                      </Button>
                     ) : null}
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDate(source.createdAt)}
-                  </span>
+                  {preview?.loading ? (
+                    <LoadingBlock rows={1} />
+                  ) : null}
+                  {preview?.error ? (
+                    <p className="text-xs text-destructive">{preview.error}</p>
+                  ) : null}
+                  {preview?.text !== undefined ? (
+                    <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted/50 p-3 text-xs leading-relaxed whitespace-pre-wrap">
+                      {preview.text || "（未提取到文本）"}
+                    </pre>
+                  ) : null}
                 </div>
               );
             })

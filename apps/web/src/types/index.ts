@@ -23,6 +23,8 @@ export interface ProductSource {
   name: string;
   /** Page or fragment reference for traceability. */
   reference?: string;
+  /** Number of pages, when extracted. */
+  page_count?: number | null;
   status: "ready" | "processing" | "failed";
   createdAt: string;
 }
@@ -141,4 +143,14 @@ export interface ProductCreatePayload {
   summary?: string;
   price?: number;
   currency?: string;
+}
+
+export interface SourceText {
+  id: ID;
+  product_id: ID;
+  name: string;
+  reference?: string | null;
+  page_count?: number | null;
+  text: string;
+  created_at?: string;
 }

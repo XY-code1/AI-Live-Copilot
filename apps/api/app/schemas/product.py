@@ -29,6 +29,7 @@ class ProductSourceOut(BaseModel):
     name: str
     reference: str | None = None
     status: ProductSourceStatus
+    page_count: int | None = None
     created_at: datetime
 
 

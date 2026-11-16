@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     )
     ai_provider: str = "deepseek"
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    storage_dir: str = "storage"
     deepseek_api_key: str = ""
     deepseek_base_url: str = "https://api.deepseek.com"
 

@@ -5,6 +5,7 @@ from app.schemas.product import (
     ProductSourceOut,
     ProductUpdate,
 )
+from app.schemas.source import SourceTextOut
 from app.schemas.workspace import WorkspaceOut
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "ProductOut",
     "ProductSourceOut",
     "ProductUpdate",
+    "SourceTextOut",
     "WorkspaceOut",
 ]
