@@ -38,8 +38,8 @@ def generate(
     comparison = None
     if payload.comparison_id is not None:
         comparison = comparison_crud.get_comparison(db, payload.comparison_id)
-        if comparison is None:
-            raise HTTPException(status_code=404, detail="对比不存在")
+        if comparison is None or comparison.product_id != product.id:
+            raise HTTPException(status_code=400, detail="对比不属于该商品")
 
     try:
         return generate_script(db, product, payload, comparison)
@@ -85,7 +85,7 @@ def delete_script(script_id: UUID, db: Session = Depends(get_db)) -> None:
     script = script_crud.get_script(db, script_id)
     if script is None:
         raise HTTPException(status_code=404, detail="话术不存在")
-    script_crud.delete_script(db, script)
+    script_crud.delete_script_series(db, script)
 
 
 @router.post(
@@ -104,8 +104,9 @@ def rewrite_section_endpoint(
     section = db.get(ScriptSection, section_id)
     if section is None or section.script_id != script.id:
         raise HTTPException(status_code=404, detail="段落不存在")
+    product = product_crud.get_product(db, script.product_id)
     try:
-        content = rewrite_section(db, script, section, payload.instruction)
+        content = rewrite_section(db, script, section, payload.instruction, product)
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return SectionRewriteOutput(content=content)

@@ -1,21 +1,13 @@
 import asyncio
-import json
-import re
 
 from sqlalchemy.orm import Session
 
 from app.ai import get_provider
+from app.ai.json_utils import parse_json_object
 from app.ai.prompts import REWRITE_SYSTEM_PROMPT
 from app.ai.provider import ChatMessage
+from app.models.product import Product
 from app.models.script import Script, ScriptSection
-
-
-def _clean_json(raw: str) -> dict:
-    text = raw.strip()
-    match = re.search(r"\{.*\}", text, re.DOTALL)
-    if match:
-        text = match.group(0)
-    return json.loads(text)
 
 
 def rewrite_section(
@@ -23,14 +15,18 @@ def rewrite_section(
     script: Script,
     section: ScriptSection,
     instruction: str,
+    product: Product | None = None,
     *,
     max_retries: int = 2,
 ) -> str:
     """Return a rewritten version of one section. Nothing is persisted here."""
+    product_line = (
+        f"商品：{product.name}" if product is not None else f"话术：{script.title}"
+    )
     user_message = (
-        f"商品：{script.title}\n"
+        f"{product_line}\n"
         f"场景：{script.scenario}；人群：{script.audience}；风格：{script.style}\n"
-        f"段落类型：{section.title or section.kind}\n"
+        f"段落类型：{section.title or section.kind.value}\n"
         f"原文：{section.content}\n"
         f"改写要求：{instruction}"
     )
@@ -40,14 +36,16 @@ def rewrite_section(
     ]
 
     last_error: Exception | None = None
-    for _ in range(max_retries):
+    for _ in range(1 + max_retries):
         try:
             provider = get_provider()
-            raw = asyncio.run(provider.complete(messages, response_format={"type": "json_object"}))
-            content = str(_clean_json(raw)["content"]).strip()
-            if content:
-                return content
-            raise ValueError("模型返回空内容")
+            raw = asyncio.run(
+                provider.complete(messages, response_format={"type": "json_object"})
+            )
+            content = parse_json_object(raw).get("content")
+            if not isinstance(content, str) or not content.strip():
+                raise ValueError("模型返回内容无效")
+            return content.strip()
         except Exception as exc:  # noqa: BLE001 - surfaced to the caller
             last_error = exc
 

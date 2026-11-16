@@ -64,11 +64,16 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
     };
   }, [scriptId]);
 
+  const dirty =
+    current !== null && JSON.stringify(draft) !== JSON.stringify(current.sections);
+
   function selectVersion(id: string) {
+    if (dirty && !window.confirm("有未保存的修改，切换版本将丢失。继续？")) return;
     const found = versions.find((item) => item.id === id);
     if (!found) return;
     setCurrent(found);
     setDraft(found.sections);
+    setSuggestion(null);
   }
 
   function updateSection(id: string, patch: Partial<ScriptSection>) {
@@ -81,13 +86,16 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
 
   function removeSection(id: string) {
     setDraft((currentDraft) => currentDraft.filter((section) => section.id !== id));
+    setSuggestion((current) =>
+      current?.sectionId === id ? null : current,
+    );
   }
 
   function addSection() {
     setDraft((currentDraft) => [
       ...currentDraft,
       {
-        id: `draft-${Date.now()}`,
+        id: `draft-${crypto.randomUUID()}`,
         scriptId: current?.id ?? "",
         kind: newKind,
         title: KIND_LABEL[newKind],
@@ -252,7 +260,15 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
                 type="button"
                 onClick={() => handleRewrite(section)}
                 aria-label="AI 改写"
-                disabled={rewritingId === section.id}
+                disabled={
+                  rewritingId !== null ||
+                  !/^[0-9a-f-]{36}$/i.test(section.id)
+                }
+                title={
+                  !/^[0-9a-f-]{36}$/i.test(section.id)
+                    ? "先保存为新版本，再对该段落使用 AI 改写"
+                    : "AI 改写"
+                }
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-primary disabled:opacity-50"
               >
                 <Sparkles className="size-4" />

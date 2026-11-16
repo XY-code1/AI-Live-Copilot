@@ -25,6 +25,21 @@ export class ApiError extends Error {
   }
 }
 
+async function errorFrom(response: Response): Promise<string> {
+  const text = await response.text().catch(() => "");
+  if (!text) return `请求失败（${response.status}）`;
+  try {
+    const data = JSON.parse(text);
+    if (typeof data.detail === "string") return data.detail;
+    if (Array.isArray(data.detail) && data.detail[0]?.msg) {
+      return String(data.detail[0].msg);
+    }
+  } catch {
+    /* not JSON */
+  }
+  return text;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${BASE_URL}${API_PREFIX}${path}`, {
     ...init,
@@ -35,8 +50,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new ApiError(response.status, detail || `请求失败（${response.status}）`);
+    throw new ApiError(response.status, await errorFrom(response));
   }
   if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
@@ -83,8 +97,7 @@ export async function uploadProductSource(
     { method: "POST", body: form },
   );
   if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new ApiError(response.status, detail || "上传失败");
+    throw new ApiError(response.status, await errorFrom(response));
   }
   return (await response.json()) as ProductSource;
 }

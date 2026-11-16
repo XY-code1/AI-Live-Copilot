@@ -37,26 +37,28 @@ class ScriptOut(BaseModel):
 
 
 class ScriptGenerateRequest(BaseModel):
-    title: str = ""
-    scenario: str = "日常带货"
-    audience: str = ""
-    style: str = "亲切自然"
+    title: str = Field(default="", max_length=200)
+    scenario: str = Field(default="日常带货", max_length=120)
+    audience: str = Field(default="", max_length=120)
+    style: str = Field(default="亲切自然", max_length=120)
     comparison_id: UUID | None = None
 
 
 class ScriptSectionInput(BaseModel):
     kind: ScriptSectionKind
-    title: str = ""
-    content: str = ""
+    title: str = Field(default="", max_length=120)
+    content: str = Field(default="", max_length=5000)
 
 
 class ScriptVersionCreate(BaseModel):
     title: str | None = None
-    sections: list[ScriptSectionInput] = Field(default_factory=list)
+    sections: list[ScriptSectionInput] = Field(default_factory=list, min_length=1)
 
 
 class SectionRewriteRequest(BaseModel):
-    instruction: str = "更口语、更有感染力，但不得夸大或绝对化"
+    instruction: str = Field(
+        default="更口语、更有感染力，但不得夸大或绝对化", min_length=1, max_length=500
+    )
 
 
 class SectionRewriteOutput(BaseModel):

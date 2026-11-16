@@ -9,6 +9,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     Uuid,
     func,
 )
@@ -45,6 +46,7 @@ class Script(Base):
     __table_args__ = (
         Index("ix_scripts_series_id", "series_id"),
         Index("ix_scripts_product_id", "product_id"),
+        UniqueConstraint("series_id", "version", name="uq_scripts_series_version"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -93,5 +95,7 @@ class ScriptSection(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False, default="")
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     origin: Mapped[str] = mapped_column(String(16), nullable=False, default="ai")
+    # Page / fragment reference copied from the source material (P5 traceability).
+    source_reference: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
     script: Mapped[Script] = relationship(back_populates="sections")
