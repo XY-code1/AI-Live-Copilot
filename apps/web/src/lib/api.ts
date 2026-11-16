@@ -6,6 +6,9 @@ import type {
   ProductCreatePayload,
   ComparisonDifference,
   ProductSource,
+  Script,
+  ScriptSection,
+  ScriptSectionKind,
   SourceText,
 } from "@/types";
 
@@ -202,4 +205,91 @@ export const comparisonApi = {
       await request<RawComparison>(`/comparisons/${id}/generate`, { method: "POST" }),
     ),
   remove: (id: string) => request<void>(`/comparisons/${id}`, { method: "DELETE" }),
+};
+
+/* ---------- scripts ---------- */
+
+type RawSection = {
+  id: string;
+  script_id: string;
+  kind: ScriptSectionKind;
+  title: string;
+  content: string;
+  position: number;
+  origin: string;
+};
+
+type RawScript = {
+  id: string;
+  series_id: string;
+  product_id: string;
+  comparison_id?: string | null;
+  version: number;
+  title: string;
+  scenario: string;
+  audience: string;
+  style: string;
+  status: string;
+  sections: RawSection[];
+  created_at: string;
+  updated_at: string;
+};
+
+function mapSection(raw: RawSection): ScriptSection {
+  return {
+    id: raw.id,
+    scriptId: raw.script_id,
+    kind: raw.kind,
+    title: raw.title,
+    content: raw.content,
+    position: raw.position,
+    origin: raw.origin,
+  };
+}
+
+function mapScript(raw: RawScript): Script {
+  return {
+    id: raw.id,
+    seriesId: raw.series_id,
+    productId: raw.product_id,
+    comparisonId: raw.comparison_id ?? null,
+    version: raw.version,
+    title: raw.title,
+    scenario: raw.scenario,
+    audience: raw.audience,
+    style: raw.style,
+    status: raw.status as Script["status"],
+    sections: raw.sections.map(mapSection),
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
+  };
+}
+
+export const scriptApi = {
+  list: async () => (await request<RawScript[]>("/scripts")).map(mapScript),
+  get: async (id: string) =>
+    mapScript(await request<RawScript>(`/scripts/${id}`)),
+  versions: async (id: string) =>
+    (await request<RawScript[]>(`/scripts/${id}/versions`)).map(mapScript),
+  generate: async (
+    productId: string,
+    payload: { title?: string; scenario?: string; audience?: string; style?: string; comparison_id?: string },
+  ) =>
+    mapScript(
+      await request<RawScript>(`/products/${productId}/scripts/generate`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    ),
+  saveVersion: async (
+    id: string,
+    payload: { title?: string; sections: { kind: ScriptSectionKind; title: string; content: string }[] },
+  ) =>
+    mapScript(
+      await request<RawScript>(`/scripts/${id}/versions`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    ),
+  remove: (id: string) => request<void>(`/scripts/${id}`, { method: "DELETE" }),
 };

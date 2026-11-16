@@ -1,0 +1,243 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
+
+import { ApiError, scriptApi } from "@/lib/api";
+import type { Script, ScriptSection, ScriptSectionKind } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ErrorBlock, LoadingBlock } from "@/components/common/state-blocks";
+import { PageHeader } from "@/components/common/page-header";
+import { Textarea } from "@/components/ui/textarea";
+
+const KIND_LABEL: Record<ScriptSectionKind, string> = {
+  opening: "开场吸引",
+  intro: "商品介绍",
+  selling_points: "核心卖点",
+  differentiation: "差异化",
+  interaction: "用户互动",
+  closing: "促单引导",
+  risk: "风险提示",
+};
+
+const selectClass =
+  "h-8 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+
+export function ScriptEditor({ scriptId }: { scriptId: string }) {
+  const router = useRouter();
+  const [versions, setVersions] = useState<Script[]>([]);
+  const [current, setCurrent] = useState<Script | null>(null);
+  const [draft, setDraft] = useState<ScriptSection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [newKind, setNewKind] = useState<ScriptSectionKind>("selling_points");
+
+  useEffect(() => {
+    let active = true;
+    scriptApi
+      .versions(scriptId)
+      .then((list) => {
+        if (!active) return;
+        const sorted = [...list].sort((a, b) => b.version - a.version);
+        setVersions(sorted);
+        setCurrent(sorted[0] ?? null);
+        setDraft(sorted[0]?.sections ?? []);
+      })
+      .catch((caught: unknown) => {
+        if (!active) return;
+        setError(caught instanceof ApiError ? caught.message : "加载失败");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [scriptId]);
+
+  function selectVersion(id: string) {
+    const found = versions.find((item) => item.id === id);
+    if (!found) return;
+    setCurrent(found);
+    setDraft(found.sections);
+  }
+
+  function updateSection(id: string, patch: Partial<ScriptSection>) {
+    setDraft((currentDraft) =>
+      currentDraft.map((section) =>
+        section.id === id ? { ...section, ...patch } : section,
+      ),
+    );
+  }
+
+  function removeSection(id: string) {
+    setDraft((currentDraft) => currentDraft.filter((section) => section.id !== id));
+  }
+
+  function addSection() {
+    setDraft((currentDraft) => [
+      ...currentDraft,
+      {
+        id: `draft-${Date.now()}`,
+        scriptId: current?.id ?? "",
+        kind: newKind,
+        title: KIND_LABEL[newKind],
+        content: "",
+        position: currentDraft.length,
+        origin: "manual",
+      },
+    ]);
+  }
+
+  async function saveVersion() {
+    if (!current) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const saved = await scriptApi.saveVersion(current.id, {
+        sections: draft.map((section) => ({
+          kind: section.kind,
+          title: section.title,
+          content: section.content,
+        })),
+      });
+      router.push(`/scripts/${saved.id}`);
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "保存失败");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeScript() {
+    if (!current || !window.confirm("确定删除该话术的所有版本？")) return;
+    try {
+      await scriptApi.remove(current.id);
+      router.push("/scripts");
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "删除失败");
+    }
+  }
+
+  if (loading) return <LoadingBlock rows={4} />;
+
+  if (!current) {
+    return <ErrorBlock title="加载失败" description={error ?? "话术不存在"} />;
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title={current.title}
+        description={`${current.scenario || "日常带货"} · ${current.audience || "未设人群"} · ${current.style || "亲切自然"}`}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link
+              href="/scripts"
+              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="size-4" /> 返回
+            </Link>
+            <Button variant="destructive" size="sm" onClick={removeScript}>
+              <Trash2 /> 删除
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="text-sm text-muted-foreground" htmlFor="version">
+          版本
+        </label>
+        <select
+          id="version"
+          value={current.id}
+          onChange={(event) => selectVersion(event.target.value)}
+          className={selectClass}
+        >
+          {versions.map((version) => (
+            <option key={version.id} value={version.id}>
+              v{version.version}
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-muted-foreground">
+          共 {versions.length} 个版本 · 编辑后保存将生成新版本
+        </span>
+      </div>
+
+      {error ? (
+        <p className="text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
+
+      <div className="flex flex-col gap-4">
+        {draft.map((section, index) => (
+          <div
+            key={section.id}
+            className={
+              section.kind === "risk"
+                ? "rounded-lg border border-warning/40 bg-warning/5 p-4"
+                : "rounded-lg border border-border bg-card p-4"
+            }
+          >
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <Badge variant="outline">{KIND_LABEL[section.kind]}</Badge>
+              <Badge variant={section.origin === "ai" ? "default" : "secondary"}>
+                {section.origin === "ai" ? "AI" : "手动"}
+              </Badge>
+              <input
+                value={section.title}
+                onChange={(event) => updateSection(section.id, { title: event.target.value })}
+                className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1 text-sm font-medium hover:border-border focus:border-input focus:outline-none"
+                aria-label="段落标题"
+              />
+              <button
+                type="button"
+                onClick={() => removeSection(section.id)}
+                aria-label="删除段落"
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-destructive"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </div>
+            <Textarea
+              value={section.content}
+              onChange={(event) => updateSection(section.id, { content: event.target.value })}
+              rows={3}
+              placeholder={`填写${KIND_LABEL[section.kind]}内容`}
+              aria-label={KIND_LABEL[section.kind]}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">第 {index + 1} 段</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={newKind}
+          onChange={(event) => setNewKind(event.target.value as ScriptSectionKind)}
+          className={selectClass}
+          aria-label="段落类型"
+        >
+          {Object.entries(KIND_LABEL).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <Button variant="outline" size="sm" onClick={addSection}>
+          <Plus /> 添加段落
+        </Button>
+        <Button size="sm" onClick={saveVersion} disabled={saving}>
+          <Save /> {saving ? "保存中…" : "保存为新版本"}
+        </Button>
+      </div>
+    </div>
+  );
+}

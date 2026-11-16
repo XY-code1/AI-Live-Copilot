@@ -99,16 +99,21 @@ export type ScriptSectionKind =
 
 export interface ScriptSection {
   id: ID;
+  scriptId: ID;
   kind: ScriptSectionKind;
   title: string;
   content: string;
+  position: number;
+  origin: string;
 }
 
 export type ScriptStatus = "draft" | "verified" | "issue";
 
 export interface Script {
   id: ID;
+  seriesId: ID;
   productId: ID;
+  comparisonId?: ID | null;
   title: string;
   scenario: string;
   audience: string;

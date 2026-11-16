@@ -162,7 +162,9 @@ export const comparisons: Comparison[] = [
 export const scripts: Script[] = [
   {
     id: "sc-1",
+    seriesId: "series-1",
     productId: "p-1",
+    comparisonId: "cmp-1",
     title: "川西五日游 · 首播话术",
     scenario: "日常带货",
     audience: "25-40 岁白领",
@@ -174,20 +176,29 @@ export const scripts: Script[] = [
     sections: [
       {
         id: "sec-1",
+        scriptId: "sc-1",
         kind: "opening",
         title: "开场吸引",
+        position: 0,
+        origin: "ai",
         content: "今天给大家带来一条川西 5 日游的线路，先把价格放在这里：3280 元。",
       },
       {
         id: "sec-2",
+        scriptId: "sc-1",
         kind: "selling_points",
         title: "核心卖点",
+        position: 1,
+        origin: "ai",
         content: "小团出行，12 人以内；住宿和门票都包含在费用里。",
       },
       {
         id: "sec-3",
+        scriptId: "sc-1",
         kind: "risk",
         title: "风险提示",
+        position: 2,
+        origin: "ai",
         content: "购物安排和自费项目暂时没有确认，下单前请咨询客服。",
       },
     ],

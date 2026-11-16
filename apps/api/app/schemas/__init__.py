@@ -17,6 +17,12 @@ from app.schemas.product import (
     ProductSourceOut,
     ProductUpdate,
 )
+from app.schemas.script import (
+    ScriptGenerateRequest,
+    ScriptOut,
+    ScriptSectionOut,
+    ScriptVersionCreate,
+)
 from app.schemas.source import SourceTextOut, UrlSourceCreate
 from app.schemas.workspace import WorkspaceOut
 
@@ -37,6 +43,10 @@ __all__ = [
     "ProductOut",
     "ProductSourceOut",
     "ProductUpdate",
+    "ScriptGenerateRequest",
+    "ScriptOut",
+    "ScriptSectionOut",
+    "ScriptVersionCreate",
     "SourceTextOut",
     "UrlSourceCreate",
     "WorkspaceOut",

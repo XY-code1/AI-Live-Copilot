@@ -5,6 +5,7 @@ from app.api.comparisons import router as comparisons_router
 from app.api.competitors import router as competitors_router
 from app.api.extraction import router as extraction_router
 from app.api.products import router as products_router
+from app.api.scripts import router as scripts_router
 from app.api.sources import router as sources_router
 
 api_router = APIRouter()
@@ -15,6 +16,7 @@ api_router.include_router(extraction_router, tags=["extraction"])
 api_router.include_router(attributes_router, tags=["attributes"])
 api_router.include_router(competitors_router, prefix="/competitors", tags=["competitors"])
 api_router.include_router(comparisons_router, prefix="/comparisons", tags=["comparisons"])
+api_router.include_router(scripts_router, tags=["scripts"])
 
 
 @api_router.get("/status", tags=["system"])

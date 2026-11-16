@@ -15,6 +15,12 @@ from app.models.product import (
     ProductSourceType,
     ProductStatus,
 )
+from app.models.script import (
+    Script,
+    ScriptSection,
+    ScriptSectionKind,
+    ScriptStatus,
+)
 from app.models.workspace import Workspace
 
 __all__ = [
@@ -31,5 +37,9 @@ __all__ = [
     "ProductSourceStatus",
     "ProductSourceType",
     "ProductStatus",
+    "Script",
+    "ScriptSection",
+    "ScriptSectionKind",
+    "ScriptStatus",
     "Workspace",
 ]

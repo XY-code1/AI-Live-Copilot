@@ -21,7 +21,7 @@ Build in the order a real SaaS product is built: foundation → usable interface
 | P1 | Product interaction & page framework | **Done** | Design system, navigation, all core pages with mock data |
 | P2 | Product knowledge base & ingestion | **Done** | Product CRUD, PDF/image/link/manual import, AI extraction |
 | P3 | Product intelligence & competitive comparison | **In progress** | Attribute normalization, diff matrix, evidence-backed advantages |
-| P4 | AI script workspace | — | DeepSeek script generation, editing, versioning, export |
+| P4 | AI script workspace | **In progress** | DeepSeek script generation, editing, versioning, export |
 | P5 | Fact verification & content assets | — | Claim checking, risk wording, traceability, export |
 | P6 | Full business loop & deployment | — | Auth, isolation, security, observability, cloud deploy, E2E |
 
@@ -104,9 +104,11 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 ---
 
-### P4 — AI script workspace
+### P4 — AI script workspace (in progress)
 
 **Goal:** the stage where the Provider Adapter proves its value.
+
+**Progress (2026-11-16):** Script / ScriptSection models with `series_id` + `version` (migration `0008`), DeepSeek structured generation (opening/intro/selling points/differentiation/interaction/closing/risk), version save/history, editor UI with add/remove sections and risk highlighting. Verified end to end with a real DeepSeek call. Next: AI rewrite/export.
 
 **Scope:** select product; select competitive analysis; select livestream scenario; select target audience; select script style; DeepSeek generation; AI rewrite and local refinement; save and version; export.
 
