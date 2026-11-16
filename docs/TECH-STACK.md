@@ -219,7 +219,7 @@ In short: establish the schema and Alembic migrations from the first model, add 
 - Cloud ASR.
 - Full multi-tenant permission and billing system.
 
-These follow the [development principles](../PRINCIPLES.md): cloud-first, no premature desktop client, and traceable AI output.
+These follow the [development principles](PRINCIPLES.md): cloud-first, no premature desktop client, and traceable AI output.
 
 ## 9. Decision record
 
