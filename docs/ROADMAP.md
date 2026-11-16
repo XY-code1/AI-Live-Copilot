@@ -108,7 +108,7 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 **Goal:** the stage where the Provider Adapter proves its value.
 
-**Progress (2026-11-16):** Script / ScriptSection models with `series_id` + `version` (migration `0008`), DeepSeek structured generation (opening/intro/selling points/differentiation/interaction/closing/risk), version save/history, editor UI with add/remove sections and risk highlighting. Verified end to end with a real DeepSeek call. Next: AI rewrite/export.
+**Progress (2026-11-16):** Script / ScriptSection models with `series_id` + `version` (migration `0008`), DeepSeek structured generation (opening/intro/selling points/differentiation/interaction/closing/risk), version save/history, editor UI with add/remove sections and risk highlighting. Verified end to end with a real DeepSeek call. **P4.3 done:** AI 改写（对单段给出建议，可采纳/忽略）+ 导出 Markdown；改写接口带 Pydantic 校验与重试，已用真实 DeepSeek 验证。
 
 **Scope:** select product; select competitive analysis; select livestream scenario; select target audience; select script style; DeepSeek generation; AI rewrite and local refinement; save and version; export.
 

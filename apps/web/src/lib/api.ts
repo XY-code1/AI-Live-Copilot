@@ -291,5 +291,15 @@ export const scriptApi = {
         body: JSON.stringify(payload),
       }),
     ),
+  rewriteSection: async (scriptId: string, sectionId: string, instruction?: string) =>
+    request<{ content: string }>(
+      `/scripts/${scriptId}/sections/${sectionId}/rewrite`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          instruction: instruction ?? "更口语、更有感染力，但不得夸大或绝对化",
+        }),
+      },
+    ),
   remove: (id: string) => request<void>(`/scripts/${id}`, { method: "DELETE" }),
 };

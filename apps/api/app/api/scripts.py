@@ -7,8 +7,16 @@ from app.crud import comparison as comparison_crud
 from app.crud import product as product_crud
 from app.crud import script as script_crud
 from app.db.session import get_db
-from app.schemas.script import ScriptGenerateRequest, ScriptOut, ScriptVersionCreate
+from app.models.script import ScriptSection
+from app.schemas.script import (
+    ScriptGenerateRequest,
+    ScriptOut,
+    ScriptVersionCreate,
+    SectionRewriteOutput,
+    SectionRewriteRequest,
+)
 from app.services.script_generation import generate_script
+from app.services.script_rewrite import rewrite_section
 
 router = APIRouter()
 
@@ -78,3 +86,26 @@ def delete_script(script_id: UUID, db: Session = Depends(get_db)) -> None:
     if script is None:
         raise HTTPException(status_code=404, detail="话术不存在")
     script_crud.delete_script(db, script)
+
+
+@router.post(
+    "/scripts/{script_id}/sections/{section_id}/rewrite",
+    response_model=SectionRewriteOutput,
+)
+def rewrite_section_endpoint(
+    script_id: UUID,
+    section_id: UUID,
+    payload: SectionRewriteRequest,
+    db: Session = Depends(get_db),
+) -> SectionRewriteOutput:
+    script = script_crud.get_script(db, script_id)
+    if script is None:
+        raise HTTPException(status_code=404, detail="话术不存在")
+    section = db.get(ScriptSection, section_id)
+    if section is None or section.script_id != script.id:
+        raise HTTPException(status_code=404, detail="段落不存在")
+    try:
+        content = rewrite_section(db, script, section, payload.instruction)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return SectionRewriteOutput(content=content)

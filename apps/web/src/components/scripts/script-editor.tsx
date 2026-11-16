@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, Plus, Save, Sparkles, Trash2, X } from "lucide-react";
 
 import { ApiError, scriptApi } from "@/lib/api";
 import type { Script, ScriptSection, ScriptSectionKind } from "@/types";
@@ -35,6 +35,11 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [newKind, setNewKind] = useState<ScriptSectionKind>("selling_points");
+  const [rewritingId, setRewritingId] = useState<string | null>(null);
+  const [suggestion, setSuggestion] = useState<{
+    sectionId: string;
+    content: string;
+  } | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -113,6 +118,49 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
     }
   }
 
+  async function handleRewrite(section: ScriptSection) {
+    if (!current) return;
+    setRewritingId(section.id);
+    setError(null);
+    try {
+      const result = await scriptApi.rewriteSection(current.id, section.id);
+      setSuggestion({ sectionId: section.id, content: result.content });
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "AI 改写失败");
+    } finally {
+      setRewritingId(null);
+    }
+  }
+
+  function acceptSuggestion() {
+    if (!suggestion) return;
+    updateSection(suggestion.sectionId, { content: suggestion.content });
+    setSuggestion(null);
+  }
+
+  function exportMarkdown() {
+    if (!current) return;
+    const lines = [
+      `# ${current.title}`,
+      "",
+      `> 商品：${current.productId} · 版本 v${current.version} · 场景：${current.scenario || "-"} · 人群：${current.audience || "-"} · 风格：${current.style || "-"}`,
+      "",
+    ];
+    for (const section of draft) {
+      lines.push(`## ${section.title || KIND_LABEL[section.kind]}`);
+      lines.push("");
+      lines.push(section.content);
+      lines.push("");
+    }
+    const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${current.title}-v${current.version}.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function removeScript() {
     if (!current || !window.confirm("确定删除该话术的所有版本？")) return;
     try {
@@ -142,6 +190,9 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
             >
               <ArrowLeft className="size-4" /> 返回
             </Link>
+            <Button variant="outline" size="sm" onClick={exportMarkdown}>
+              导出 Markdown
+            </Button>
             <Button variant="destructive" size="sm" onClick={removeScript}>
               <Trash2 /> 删除
             </Button>
@@ -199,6 +250,15 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
               />
               <button
                 type="button"
+                onClick={() => handleRewrite(section)}
+                aria-label="AI 改写"
+                disabled={rewritingId === section.id}
+                className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-primary disabled:opacity-50"
+              >
+                <Sparkles className="size-4" />
+              </button>
+              <button
+                type="button"
                 onClick={() => removeSection(section.id)}
                 aria-label="删除段落"
                 className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-destructive"
@@ -213,6 +273,24 @@ export function ScriptEditor({ scriptId }: { scriptId: string }) {
               placeholder={`填写${KIND_LABEL[section.kind]}内容`}
               aria-label={KIND_LABEL[section.kind]}
             />
+            {suggestion?.sectionId === section.id ? (
+              <div className="mt-2 rounded-md border border-primary/40 bg-accent/40 p-3">
+                <p className="text-xs font-medium text-primary">AI 改写建议</p>
+                <p className="mt-1 text-sm">{suggestion.content}</p>
+                <div className="mt-2 flex gap-2">
+                  <Button size="sm" variant="outline" onClick={acceptSuggestion}>
+                    <Check /> 采纳
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSuggestion(null)}
+                  >
+                    <X /> 忽略
+                  </Button>
+                </div>
+              </div>
+            ) : null}
             <p className="mt-1 text-xs text-muted-foreground">第 {index + 1} 段</p>
           </div>
         ))}

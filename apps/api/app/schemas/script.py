@@ -53,3 +53,11 @@ class ScriptSectionInput(BaseModel):
 class ScriptVersionCreate(BaseModel):
     title: str | None = None
     sections: list[ScriptSectionInput] = Field(default_factory=list)
+
+
+class SectionRewriteRequest(BaseModel):
+    instruction: str = "更口语、更有感染力，但不得夸大或绝对化"
+
+
+class SectionRewriteOutput(BaseModel):
+    content: str
