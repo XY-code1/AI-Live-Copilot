@@ -3,11 +3,11 @@
 - **Status:** Accepted
 - **Last updated:** 2026-11-16
 - **Owner:** XY-code1
-- **References:** [TECH-STACK.md](TECH-STACK.md) · [V1.1 scope](product/V1.1-SCOPE.md) · [ADR 0001](adr/0001-v1.1-architecture.md) · [ADR 0002](adr/0002-file-processing-and-async-boundaries.md)
+- **References:** [Development principles](PRINCIPLES.md) · [TECH-STACK.md](TECH-STACK.md) · [V1.1 scope](product/V1.1-SCOPE.md) · [ADR 0001](adr/0001-v1.1-architecture.md) · [ADR 0002](adr/0002-file-processing-and-async-boundaries.md)
 
 > **Naming note:** `P0–P6` below are **development phases** (execution order). They are unrelated to the `P0/P1/P2` priority labels used in [TECH-STACK.md](TECH-STACK.md) for individual technologies.
 
-## 1. Principle
+## 1. Delivery cadence
 
 Build in the order a real SaaS product is built: foundation → usable interface → first business module → differentiation → reliability → deployment. Do not start all business modules at once.
 

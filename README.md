@@ -128,6 +128,8 @@ From understanding products to creating persuasive sales content, and eventually
 
 ---
 
+**Development principles:** traceable AI output, cloud-first, demoable outcomes — see [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md).
+
 **Project Status:** P0 (engineering foundation) complete as of 2026-11-16; P1 (page framework) is next. Monorepo, compose stack, and AI provider adapter exist; business features are planned, not built.
 
 **Note:** Features listed in the roadmap are planned capabilities and are not necessarily available in the current version.
