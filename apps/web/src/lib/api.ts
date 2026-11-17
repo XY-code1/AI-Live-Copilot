@@ -90,6 +90,7 @@ type RawProductSource = {
   page_count?: number | null;
   content_hash?: string | null;
   parser?: string | null;
+  sufficiency?: string;
   run_id?: string | null;
   created_at: string;
 };
@@ -124,6 +125,7 @@ function mapProduct(raw: RawProduct): Product {
       page_count: source.page_count ?? null,
       contentHash: source.content_hash ?? null,
       parser: source.parser ?? null,
+      sufficiency: source.sufficiency ?? "sufficient",
       runId: source.run_id ?? null,
       createdAt: source.created_at,
     })),

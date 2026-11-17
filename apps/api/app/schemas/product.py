@@ -34,6 +34,7 @@ class ProductSourceOut(BaseModel):
     page_count: int | None = None
     content_hash: str | None = None
     parser: str | None = None
+    sufficiency: str
     run_id: UUID | None = None
     created_at: datetime
 

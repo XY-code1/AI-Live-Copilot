@@ -136,6 +136,8 @@ class ProductSource(Base):
     )
     content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
     parser: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    # sufficient | insufficient | restricted
+    sufficiency: Mapped[str] = mapped_column(String(16), nullable=False, default="sufficient")
     status: Mapped[ProductSourceStatus] = mapped_column(
         _SOURCE_STATUS, nullable=False, default=ProductSourceStatus.ready
     )

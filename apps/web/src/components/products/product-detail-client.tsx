@@ -504,6 +504,21 @@ export function ProductDetailClient({ productId }: { productId: string }) {
                         sha256:{source.contentHash.slice(0, 8)}
                       </span>
                     ) : null}
+                    <span
+                      className={
+                        source.sufficiency === "restricted"
+                          ? "text-xs text-destructive"
+                          : source.sufficiency === "insufficient"
+                            ? "text-xs text-warning"
+                            : "text-xs text-success"
+                      }
+                    >
+                      {source.sufficiency === "restricted"
+                        ? "受限页面"
+                        : source.sufficiency === "insufficient"
+                          ? "内容不足"
+                          : "内容充分"}
+                    </span>
                     <span className="text-xs text-muted-foreground">
                       {formatDate(source.createdAt)}
                     </span>

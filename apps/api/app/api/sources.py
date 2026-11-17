@@ -20,6 +20,7 @@ from app.schemas.source import SourceTextOut, UrlSourceCreate, UrlSourcePreview
 from app.services.ocr import extract_image_text
 from app.services.pdf import extract_pdf_text
 from app.services.segments import image_segments, pdf_segments, url_segments
+from app.services.sufficiency import assess as assess_sufficiency
 from app.services.url import (
     fetch_url_page,
     fetch_url_text,
@@ -65,27 +66,37 @@ def upload_source(
 
     filename = Path(file.filename or "upload.bin").name
     suffix = Path(filename).suffix.lower()
+    is_snapshot = suffix in {".html", ".htm", ".txt"}
     kind = "pdf" if (data.startswith(b"%PDF-") and suffix == ".pdf") else "image"
+    parser = "snapshot" if is_snapshot else parser_version(kind)
     run = ingestion_crud.start_run(
         db,
         product_id=product.id,
         type=kind,
         workspace_id=auth.workspace_id,
-        parser=parser_version(kind),
+        parser=parser,
     )
     try:
-        if kind == "pdf":
+        if is_snapshot:
+            text = data.decode("utf-8", errors="replace")
+            page_count = None
+            source_type = ProductSourceType.url
+            storage_path = save_upload(data, filename)
+        elif kind == "pdf":
             text, page_count = extract_pdf_text(data)
             source_type = ProductSourceType.pdf
+            storage_path = save_upload(data, filename)
         elif suffix in {".png", ".jpg", ".jpeg", ".webp"}:
             text, page_count = extract_image_text(data), 1
             source_type = ProductSourceType.image
+            storage_path = save_upload(data, filename)
         else:
-            raise ValueError("文件内容与支持的 PDF/图片格式不匹配")
-        storage_path = save_upload(data, filename)
+            raise ValueError("文件内容与支持的 PDF/图片/HTML/TXT 格式不匹配")
     except (ValueError, RuntimeError) as exc:
         ingestion_crud.fail_run(db, run, str(exc))
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    assessment = assess_sufficiency(text, is_url=source_type == ProductSourceType.url)
 
     source = ProductSource(
         product_id=product.id,
@@ -98,12 +109,20 @@ def upload_source(
         page_count=page_count,
         content_hash=hashlib.sha256(data).hexdigest(),
         parser=run.parser,
+        sufficiency=assessment.sufficiency,
     )
     db.add(source)
     db.flush()
-    segments = (
-        pdf_segments(data) if source_type == ProductSourceType.pdf else image_segments(text)
-    )
+    if source_type == ProductSourceType.pdf:
+        segments = pdf_segments(data)
+    elif is_snapshot:
+        segments = url_segments(text) if suffix in {".html", ".htm"} else [
+            __import__("app.services.segments", fromlist=["SegmentDraft"]).SegmentDraft(
+                kind="page", position=0, content=text
+            )
+        ]
+    else:
+        segments = image_segments(text)
     for draft in segments:
         db.add(
             SourceSegment(
@@ -172,6 +191,7 @@ def create_url_source(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     digest = hashlib.sha256(html.encode("utf-8", errors="replace")).hexdigest()
+    url_assessment = assess_sufficiency(text, is_url=True)
     source = ProductSource(
         product_id=product.id,
         type=ProductSourceType.url,
@@ -183,6 +203,7 @@ def create_url_source(
         page_count=None,
         content_hash=digest,
         parser=run.parser,
+        sufficiency=url_assessment.sufficiency,
     )
     db.add(source)
     db.flush()
