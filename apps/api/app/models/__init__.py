@@ -6,6 +6,7 @@ from app.models.comparison import (
     Competitor,
     EvidenceType,
 )
+from app.models.ingestion import IngestionRun, IngestionStatus
 from app.models.product import (
     ConfirmationStatus,
     Product,
@@ -39,6 +40,8 @@ __all__ = [
     "Competitor",
     "ConfirmationStatus",
     "EvidenceType",
+    "IngestionRun",
+    "IngestionStatus",
     "IssueSeverity",
     "IssueType",
     "Product",

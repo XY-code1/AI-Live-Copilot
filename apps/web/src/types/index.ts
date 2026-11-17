@@ -25,6 +25,9 @@ export interface ProductSource {
   reference?: string;
   /** Number of pages, when extracted. */
   page_count?: number | null;
+  contentHash?: string | null;
+  parser?: string | null;
+  runId?: ID | null;
   status: "ready" | "processing" | "failed";
   createdAt: string;
 }

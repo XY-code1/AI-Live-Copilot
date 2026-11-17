@@ -87,6 +87,9 @@ type RawProductSource = {
   reference?: string | null;
   status: string;
   page_count?: number | null;
+  content_hash?: string | null;
+  parser?: string | null;
+  run_id?: string | null;
   created_at: string;
 };
 
@@ -118,6 +121,9 @@ function mapProduct(raw: RawProduct): Product {
       reference: source.reference ?? undefined,
       status: source.status as "ready" | "processing" | "failed",
       page_count: source.page_count ?? null,
+      contentHash: source.content_hash ?? null,
+      parser: source.parser ?? null,
+      runId: source.run_id ?? null,
       createdAt: source.created_at,
     })),
     attributes: raw.attributes.map((attribute) => ({

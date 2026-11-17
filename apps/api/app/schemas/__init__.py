@@ -9,6 +9,7 @@ from app.schemas.comparison import (
     DifferenceOut,
 )
 from app.schemas.extraction import ExtractionAttribute, ExtractionOutput
+from app.schemas.ingestion import IngestionRunOut
 from app.schemas.product import (
     AttributeCreate,
     ProductAttributeOut,
@@ -43,6 +44,7 @@ __all__ = [
     "DifferenceOut",
     "ExtractionAttribute",
     "ExtractionOutput",
+    "IngestionRunOut",
     "ProductAttributeOut",
     "ProductCreate",
     "ProductOut",

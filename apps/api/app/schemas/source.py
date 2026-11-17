@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.ingestion import IngestionRunOut
+
 
 class SourceTextOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -14,6 +16,7 @@ class SourceTextOut(BaseModel):
     page_count: int | None = None
     text: str
     created_at: datetime | None = None
+    run: IngestionRunOut | None = None
 
 
 class UrlSourceCreate(BaseModel):

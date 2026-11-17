@@ -56,8 +56,10 @@ def _validate_public_url(url: str) -> None:
             raise ValueError("不允许访问本机、内网或保留地址")
 
 
-def fetch_url_text(url: str) -> tuple[str, str]:
+def fetch_url_page(url: str) -> tuple[str, str, str, list[str], str]:
+    """Return (title, text, final_url, redirect_chain, html)."""
     current = url
+    redirects: list[str] = []
     try:
         with httpx.Client(timeout=TIMEOUT, follow_redirects=False, headers={"User-Agent": USER_AGENT}) as client:
             for _ in range(MAX_REDIRECTS + 1):
@@ -67,6 +69,7 @@ def fetch_url_text(url: str) -> tuple[str, str]:
                         location = response.headers.get("location")
                         if not location:
                             raise ValueError("重定向缺少目标地址")
+                        redirects.append(current)
                         current = urljoin(current, location)
                         continue
                     response.raise_for_status()
@@ -91,4 +94,10 @@ def fetch_url_text(url: str) -> tuple[str, str]:
     for element in soup(["script", "style", "noscript", "iframe"]):
         element.decompose()
     title = soup.title.get_text(strip=True) if soup.title else current
-    return title[:255], soup.get_text("\n", strip=True)[:MAX_CHARS]
+    text = soup.get_text("\n", strip=True)[:MAX_CHARS]
+    return title[:255], text, current, redirects, body
+
+
+def fetch_url_text(url: str) -> tuple[str, str]:
+    title, text, _final_url, _redirects, _html = fetch_url_page(url)
+    return title, text

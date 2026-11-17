@@ -7,9 +7,16 @@ HTML = """
 
 
 def test_create_url_source(client, monkeypatch):
+    html = f"<html><body>{HTML}</body></html>"
     monkeypatch.setattr(
-        "app.api.sources.fetch_url_text",
-        lambda url: ("川西五日游 详情页", "川西五日游\n出行天数：5 天 4 晚\n出行方式：小团"),
+        "app.api.sources.fetch_url_page",
+        lambda url: (
+            "川西五日游 详情页",
+            "川西五日游\n出行天数：5 天 4 晚\n出行方式：小团",
+            url,
+            [],
+            html,
+        ),
     )
     product_id = create_product(client)
 
@@ -31,7 +38,7 @@ def test_url_source_fetch_failure_returns_400(client, monkeypatch):
     def failing_fetch(url):
         raise ValueError("boom")
 
-    monkeypatch.setattr("app.api.sources.fetch_url_text", failing_fetch)
+    monkeypatch.setattr("app.api.sources.fetch_url_page", failing_fetch)
     product_id = create_product(client)
     response = client.post(
         f"/api/v1/products/{product_id}/sources/url",
@@ -43,8 +50,8 @@ def test_url_source_fetch_failure_returns_400(client, monkeypatch):
 def test_create_url_source_extracts_escaped_link_from_share_text(client, monkeypatch):
     captured = []
     monkeypatch.setattr(
-        "app.api.sources.fetch_url_text",
-        lambda url: (captured.append(url) or ("抖音商品", "三日游商品详情")),
+        "app.api.sources.fetch_url_page",
+        lambda url: (captured.append(url) or ("抖音商品", "三日游商品详情", url, [], "<html></html>")),
     )
     product_id = create_product(client)
     response = client.post(

@@ -22,6 +22,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
+    from app.models.ingestion import IngestionRun
     from app.models.script import Script
 
 if TYPE_CHECKING:
@@ -129,6 +130,11 @@ class ProductSource(Base):
     # Text extracted from the file (PDF) so it can be traced and searched later.
     content_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     page_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    run_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("ingestion_runs.id", ondelete="SET NULL"), nullable=True
+    )
+    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    parser: Mapped[str | None] = mapped_column(String(120), nullable=True)
     status: Mapped[ProductSourceStatus] = mapped_column(
         _SOURCE_STATUS, nullable=False, default=ProductSourceStatus.ready
     )
@@ -137,6 +143,9 @@ class ProductSource(Base):
     )
 
     product: Mapped[Product] = relationship(back_populates="sources")
+    run: Mapped["IngestionRun | None"] = relationship(
+        "IngestionRun", foreign_keys="[ProductSource.run_id]", uselist=False
+    )
     attributes: Mapped[list["ProductAttribute"]] = relationship(
         back_populates="source", lazy="selectin"
     )

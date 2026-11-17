@@ -32,6 +32,9 @@ class ProductSourceOut(BaseModel):
     reference: str | None = None
     status: ProductSourceStatus
     page_count: int | None = None
+    content_hash: str | None = None
+    parser: str | None = None
+    run_id: UUID | None = None
     created_at: datetime
 
 

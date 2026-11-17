@@ -24,7 +24,7 @@ Build in the order a real SaaS product is built: foundation → usable interface
 | P4 | AI script workspace | **Done** | DeepSeek script generation, editing, versioning, export |
 | P5 | Fact verification & content assets | **Done** | Claim checking, risk wording, traceability, export |
 | P6 | Full business loop & deployment | **Code complete** | Auth, isolation, security, observability, Render Blueprint, E2E |
-| P7 | Parsing evidence & quality regression | Next | [PARSING-ROADMAP.md](PARSING-ROADMAP.md) |
+| P7 | Parsing evidence & quality regression | **In progress** | [PARSING-ROADMAP.md](PARSING-ROADMAP.md) |
 
 ## 3. Phase details
 
@@ -158,3 +158,9 @@ P0 ──> P1 ──> P2 ──> P3 ──> P4 ──> P5 ──> P6
 ```
 
 P1's mock data shape must anticipate P2's schema. P2's schema must anticipate P3/P5's evidence fields. P3's evidence labels feed P4 generation and P5 verification. P6 assumes P1–P5 are feature-complete and adds cross-cutting concerns rather than new business modules. P7 then makes ingestion auditable and regression-safe; it is additive and preserves existing interfaces.
+
+### P7 — Parsing evidence & quality regression (in progress)
+
+Plan: [PARSING-ROADMAP.md](PARSING-ROADMAP.md).
+
+**P0 delivered (2026-11-17):** `ingestion_runs` table + source evidence (migration 014); PDF/image/URL imports record parser version, SHA-256 content hash, snapshot path, final URL and redirect chain; failed imports record a failed run; `GET /products/{id}/ingestion-runs` exposes the run history; product detail shows parser/hash. Next: P1 static deep parsing.

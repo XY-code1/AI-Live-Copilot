@@ -475,6 +475,16 @@ export function ProductDetailClient({ productId }: { productId: string }) {
                         {source.page_count} 页
                       </span>
                     ) : null}
+                    {source.parser ? (
+                      <span className="text-xs text-muted-foreground">
+                        {source.parser}
+                      </span>
+                    ) : null}
+                    {source.contentHash ? (
+                      <span className="text-xs text-muted-foreground">
+                        sha256:{source.contentHash.slice(0, 8)}
+                      </span>
+                    ) : null}
                     <span className="text-xs text-muted-foreground">
                       {formatDate(source.createdAt)}
                     </span>

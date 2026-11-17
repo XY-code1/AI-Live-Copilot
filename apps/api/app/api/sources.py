@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 from uuid import UUID
 
@@ -6,7 +7,9 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import AuthContext, get_auth_context
 from app.core.config import settings
-from app.core.storage import save_upload
+from app.core.parsing import parser_version
+from app.core.storage import save_snapshot, save_upload
+from app.crud import ingestion as ingestion_crud
 from app.crud import product as product_crud
 from app.db.session import get_db
 from app.models.product import ProductSource, ProductSourceStatus, ProductSourceType
@@ -14,7 +17,12 @@ from app.schemas.product import ProductSourceOut
 from app.schemas.source import SourceTextOut, UrlSourceCreate, UrlSourcePreview
 from app.services.ocr import extract_image_text
 from app.services.pdf import extract_pdf_text
-from app.services.url import fetch_url_text, infer_product_fields, normalize_shared_url
+from app.services.url import (
+    fetch_url_page,
+    fetch_url_text,
+    infer_product_fields,
+    normalize_shared_url,
+)
 
 router = APIRouter()
 
@@ -54,8 +62,16 @@ def upload_source(
 
     filename = Path(file.filename or "upload.bin").name
     suffix = Path(filename).suffix.lower()
+    kind = "pdf" if (data.startswith(b"%PDF-") and suffix == ".pdf") else "image"
+    run = ingestion_crud.start_run(
+        db,
+        product_id=product.id,
+        type=kind,
+        workspace_id=auth.workspace_id,
+        parser=parser_version(kind),
+    )
     try:
-        if data.startswith(b"%PDF-") and suffix == ".pdf":
+        if kind == "pdf":
             text, page_count = extract_pdf_text(data)
             source_type = ProductSourceType.pdf
         elif suffix in {".png", ".jpg", ".jpeg", ".webp"}:
@@ -65,6 +81,7 @@ def upload_source(
             raise ValueError("文件内容与支持的 PDF/图片格式不匹配")
         storage_path = save_upload(data, filename)
     except (ValueError, RuntimeError) as exc:
+        ingestion_crud.fail_run(db, run, str(exc))
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     source = ProductSource(
@@ -76,8 +93,18 @@ def upload_source(
         status=ProductSourceStatus.ready,
         content_text=text,
         page_count=page_count,
+        content_hash=hashlib.sha256(data).hexdigest(),
+        parser=run.parser,
     )
     db.add(source)
+    db.flush()
+    ingestion_crud.finish_run(
+        db,
+        run,
+        source_id=source.id,
+        content_hash=source.content_hash,
+        snapshot_path=storage_path,
+    )
     db.commit()
     db.refresh(source)
     return source
@@ -95,6 +122,7 @@ def read_source_text(source_id: UUID, db: Session = Depends(get_db), auth: AuthC
         reference=source.reference,
         page_count=source.page_count,
         text=source.content_text or "",
+        run=source.run,
     )
 
 
@@ -109,14 +137,24 @@ def create_url_source(
     if product is None:
         raise HTTPException(status_code=404, detail="商品不存在")
 
+    run = ingestion_crud.start_run(
+        db,
+        product_id=product.id,
+        type="url",
+        workspace_id=auth.workspace_id,
+        parser=parser_version("url"),
+    )
     try:
         url = normalize_shared_url(payload.url)
-        title, text = fetch_url_text(url)
+        title, text, final_url, redirects, html = fetch_url_page(url)
         if payload.url.strip() != url:
             text = f"分享文案：\n{payload.url.strip()}\n\n网页内容：\n{text}"
+        snapshot_path = save_snapshot(html.encode("utf-8", errors="replace"), ".html")
     except ValueError as exc:
+        ingestion_crud.fail_run(db, run, str(exc))
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
+    digest = hashlib.sha256(html.encode("utf-8", errors="replace")).hexdigest()
     source = ProductSource(
         product_id=product.id,
         type=ProductSourceType.url,
@@ -126,8 +164,20 @@ def create_url_source(
         status=ProductSourceStatus.ready,
         content_text=text,
         page_count=None,
+        content_hash=digest,
+        parser=run.parser,
     )
     db.add(source)
+    db.flush()
+    ingestion_crud.finish_run(
+        db,
+        run,
+        source_id=source.id,
+        content_hash=digest,
+        snapshot_path=snapshot_path,
+        final_url=final_url,
+        redirect_chain=redirects,
+    )
     db.commit()
     db.refresh(source)
     return source
