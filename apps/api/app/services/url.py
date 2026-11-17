@@ -1,6 +1,7 @@
 """Securely fetch a public product page and extract readable text."""
 
 import ipaddress
+import re
 import socket
 from urllib.parse import urljoin, urlparse
 
@@ -13,6 +14,15 @@ USER_AGENT = "AI-Live-Copilot/1.1 (+https://github.com/XY-code1/AI-Live-Copilot)
 TIMEOUT = 15.0
 MAX_CHARS = 50_000
 MAX_REDIRECTS = 5
+URL_PATTERN = re.compile(r"https?://[^\s<>\"']+", re.IGNORECASE)
+
+
+def normalize_shared_url(value: str) -> str:
+    """Extract an HTTP URL from copied share text, including escaped separators."""
+    match = URL_PATTERN.search(value.replace(r"\://", "://"))
+    if match is None:
+        raise ValueError("未在分享内容中找到有效的 HTTP/HTTPS 链接")
+    return match.group(0).rstrip(".,;:!?，。；：！？）)]}")
 
 
 def _validate_public_url(url: str) -> None:

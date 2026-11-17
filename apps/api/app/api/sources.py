@@ -14,7 +14,7 @@ from app.schemas.product import ProductSourceOut
 from app.schemas.source import SourceTextOut, UrlSourceCreate
 from app.services.ocr import extract_image_text
 from app.services.pdf import extract_pdf_text
-from app.services.url import fetch_url_text
+from app.services.url import fetch_url_text, normalize_shared_url
 
 router = APIRouter()
 
@@ -95,7 +95,10 @@ def create_url_source(
         raise HTTPException(status_code=404, detail="商品不存在")
 
     try:
-        title, text = fetch_url_text(payload.url)
+        url = normalize_shared_url(payload.url)
+        title, text = fetch_url_text(url)
+        if payload.url.strip() != url:
+            text = f"分享文案：\n{payload.url.strip()}\n\n网页内容：\n{text}"
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -103,8 +106,8 @@ def create_url_source(
         product_id=product.id,
         type=ProductSourceType.url,
         name=title,
-        reference=payload.url,
-        storage_path=payload.url,
+        reference=url,
+        storage_path=url,
         status=ProductSourceStatus.ready,
         content_text=text,
         page_count=None,
