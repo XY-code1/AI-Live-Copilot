@@ -20,10 +20,11 @@ Build in the order a real SaaS product is built: foundation → usable interface
 | P0 | Engineering foundation | **Done** | Next.js, FastAPI, PostgreSQL, Provider Adapter, Docker, ADRs |
 | P1 | Product interaction & page framework | **Done** | Design system, navigation, all core pages with mock data |
 | P2 | Product knowledge base & ingestion | **Done** | Product CRUD, PDF/image/link/manual import, AI extraction |
-| P3 | Product intelligence & competitive comparison | **In progress** | Attribute normalization, diff matrix, evidence-backed advantages |
-| P4 | AI script workspace | **In progress** | DeepSeek script generation, editing, versioning, export |
+| P3 | Product intelligence & competitive comparison | **Done** | Attribute normalization, diff matrix, evidence-backed advantages |
+| P4 | AI script workspace | **Done** | DeepSeek script generation, editing, versioning, export |
 | P5 | Fact verification & content assets | **Done** | Claim checking, risk wording, traceability, export |
 | P6 | Full business loop & deployment | **Code complete** | Auth, isolation, security, observability, Render Blueprint, E2E |
+| P7 | Parsing evidence & quality regression | Next | [PARSING-ROADMAP.md](PARSING-ROADMAP.md) |
 
 ## 3. Phase details
 
@@ -156,4 +157,4 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 P0 ──> P1 ──> P2 ──> P3 ──> P4 ──> P5 ──> P6
 ```
 
-P1's mock data shape must anticipate P2's schema. P2's schema must anticipate P3/P5's evidence fields. P3's evidence labels feed P4 generation and P5 verification. P6 assumes P1–P5 are feature-complete and adds cross-cutting concerns rather than new business modules.
+P1's mock data shape must anticipate P2's schema. P2's schema must anticipate P3/P5's evidence fields. P3's evidence labels feed P4 generation and P5 verification. P6 assumes P1–P5 are feature-complete and adds cross-cutting concerns rather than new business modules. P7 then makes ingestion auditable and regression-safe; it is additive and preserves existing interfaces.
