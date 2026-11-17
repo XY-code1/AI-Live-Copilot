@@ -1,7 +1,6 @@
 from functools import lru_cache
 from io import BytesIO
 
-import numpy as np
 from PIL import Image
 
 
@@ -20,6 +19,10 @@ def _engine():
 
 
 def extract_image_text(data: bytes) -> str:
+    try:
+        import numpy as np
+    except ImportError as exc:
+        raise RuntimeError("OCR 组件未安装，请使用 OCR 依赖组部署") from exc
     try:
         image = Image.open(BytesIO(data)).convert("RGB")
         image.load()
