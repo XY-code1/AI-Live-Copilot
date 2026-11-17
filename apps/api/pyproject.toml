@@ -14,7 +14,8 @@ dependencies = [
   "pydantic-settings>=2.7,<3",
   "sqlalchemy>=2.0,<3",
   "uvicorn[standard]>=0.34,<1",
-  "clerk-backend-api>=7.1.0",
+  "pyjwt>=2.8,<3",
+  "bcrypt>=4.1,<5",
   "sentry-sdk[fastapi]>=2.75.0",
   "pillow>=13.0.0",
 ]
@@ -41,5 +42,5 @@ target-version = "py312"
 
 [tool.ruff.lint]
 # FastAPI declares dependencies via `Depends(...)` defaults by design.
-extend-ignore = ["B008"]
+extend-ignore = ["B008", "UP017"]
 

@@ -26,11 +26,13 @@ from app.schemas.script import (
     SectionRewriteRequest,
 )
 from app.schemas.source import SourceTextOut, UrlSourceCreate
+from app.schemas.user import AuthResponse, UserCreate, UserLogin, UserOut
 from app.schemas.verification import ScriptVerificationOut, VerificationIssueOut
 from app.schemas.workspace import WorkspaceOut
 
 __all__ = [
     "AttributeCreate",
+    "AuthResponse",
     "ComparisonCreate",
     "ComparisonGenerationOutput",
     "ComparisonOut",
@@ -55,6 +57,9 @@ __all__ = [
     "SectionRewriteRequest",
     "SourceTextOut",
     "UrlSourceCreate",
+    "UserCreate",
+    "UserLogin",
+    "UserOut",
     "VerificationIssueOut",
     "WorkspaceOut",
 ]

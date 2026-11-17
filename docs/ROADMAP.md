@@ -140,7 +140,7 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 **Acceptance:** full loop passes E2E; a second user cannot read another workspace's data; deployment runs from compose/cloud with secrets externalized.
 
-**Delivered (2026-11-17):** Clerk JWT integration with a local development mode, enforced workspace isolation, PaddleOCR image ingestion, hardened upload and URL import boundaries, JSON request logging and Sentry hooks, GitHub Actions, Playwright core-flow coverage, migration verification, and a Render Blueprint with persistent uploads. Final public deployment and custom-domain verification require the owner's Clerk, Sentry, Render, DNS, and DeepSeek credentials.
+**Delivered (2026-11-17):** email/password JWT authentication with a local development mode, enforced workspace isolation, PaddleOCR image ingestion, hardened upload and URL import boundaries, JSON request logging and Sentry hooks, GitHub Actions, Playwright core-flow coverage, migration verification, and a Render Blueprint with persistent uploads. Final public deployment and custom-domain verification require the owner's Sentry, Render, DNS, and DeepSeek credentials.
 
 ## 4. Cross-phase rules
 

@@ -455,3 +455,29 @@ export const verificationApi = {
       mapVerification,
     ),
 };
+
+export interface AuthUser {
+  id: string;
+  workspace_id: string;
+  email: string;
+  name: string;
+  created_at: string;
+}
+
+export const authApi = {
+  register: async (payload: { email: string; password: string; name?: string }) => {
+    const data = await request<{ token: string; user: AuthUser }>("/auth/register", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return data;
+  },
+  login: async (payload: { email: string; password: string }) => {
+    const data = await request<{ token: string; user: AuthUser }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return data;
+  },
+  me: () => request<AuthUser>("/auth/me"),
+};

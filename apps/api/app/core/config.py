@@ -14,11 +14,10 @@ class Settings(BaseSettings):
     )
     ai_provider: str = "deepseek"
     environment: str = "development"
-    auth_mode: str = "dev"
-    clerk_issuer: str = ""
-    clerk_audience: str = ""
-    clerk_jwt_key: str = ""
-    clerk_jwks_url: str = ""
+    auth_mode: str = "password"
+    jwt_secret: str = "change-me-in-production"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60 * 24 * 7
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     storage_dir: str = "storage"
     max_upload_bytes: int = 15 * 1024 * 1024

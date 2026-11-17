@@ -130,6 +130,6 @@ From understanding products to creating persuasive sales content, and eventually
 
 **Development principles:** traceable AI output, cloud-first, demoable outcomes — see [`docs/PRINCIPLES.md`](docs/PRINCIPLES.md).
 
-**Project Status:** V1.1 implementation complete as of 2026-11-17. The repository includes the core product workflow, PaddleOCR ingestion, Clerk-ready authentication and workspace isolation, hardened imports, CI/E2E, Render deployment configuration, and Sentry/JSON observability. Public deployment still requires owner-provided service credentials and DNS configuration; see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
+**Project Status:** V1.1 implementation complete as of 2026-11-17. The repository includes the core product workflow, PaddleOCR ingestion, email/password JWT authentication and workspace isolation, hardened imports, CI/E2E, Render deployment configuration, and Sentry/JSON observability. Public deployment still requires owner-provided service credentials and DNS configuration; see [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 **Note:** Features listed in the roadmap are planned capabilities and are not necessarily available in the current version.
