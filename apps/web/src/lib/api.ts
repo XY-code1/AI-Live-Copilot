@@ -154,6 +154,11 @@ export const productApi = {
       method: "POST",
       body: JSON.stringify({ url }),
     }),
+  previewUrl: (url: string) =>
+    request<{ url: string; name: string; category: string; summary: string; price?: number | null }>(
+      "/sources/url/preview",
+      { method: "POST", body: JSON.stringify({ url }) },
+    ),
   addAttribute: (id: string, payload: { label: string; value: string }) =>
     request<ProductAttribute>(`/products/${id}/attributes`, {
       method: "POST",

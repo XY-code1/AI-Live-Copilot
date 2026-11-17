@@ -24,18 +24,51 @@ export function ProductForm({ product, submitLabel }: ProductFormProps) {
   const [summary, setSummary] = useState(product?.summary ?? "");
   const [sourceUrl, setSourceUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [recognizing, setRecognizing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function recognizeUrl() {
+    if (!sourceUrl.trim()) return;
+    setRecognizing(true);
+    setError(null);
+    try {
+      const preview = await productApi.previewUrl(sourceUrl.trim());
+      setName(preview.name);
+      setCategory(preview.category);
+      setSummary(preview.summary);
+      setPrice(preview.price == null ? "" : String(preview.price));
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "链接识别失败，请重试");
+    } finally {
+      setRecognizing(false);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setSubmitting(true);
     setError(null);
     try {
+      let resolvedName = name.trim();
+      let resolvedCategory = category.trim();
+      let resolvedSummary = summary.trim();
+      let resolvedPrice = price.trim() === "" ? undefined : Number(price);
+      if (!name.trim() && sourceUrl.trim()) {
+        const preview = await productApi.previewUrl(sourceUrl.trim());
+        setName(preview.name);
+        setCategory(preview.category);
+        setSummary(preview.summary);
+        setPrice(preview.price == null ? "" : String(preview.price));
+        resolvedName = preview.name;
+        resolvedCategory = preview.category;
+        resolvedSummary = preview.summary;
+        resolvedPrice = preview.price ?? undefined;
+      }
       const payload = {
-        name: name.trim(),
-        category: category.trim(),
-        summary: summary.trim(),
-        price: price.trim() === "" ? undefined : Number(price),
+        name: resolvedName,
+        category: resolvedCategory,
+        summary: resolvedSummary,
+        price: resolvedPrice,
       };
       const saved = product
         ? await productApi.update(product.id, payload)
@@ -62,7 +95,7 @@ export function ProductForm({ product, submitLabel }: ProductFormProps) {
               id="name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              required
+              required={!sourceUrl.trim()}
               placeholder="例如：川西五日游"
             />
           </div>
@@ -114,6 +147,15 @@ export function ProductForm({ product, submitLabel }: ProductFormProps) {
               <p className="text-xs text-muted-foreground">
                 创建商品后将自动抓取链接，并把分享文案保存为商品资料。
               </p>
+              <Button
+                type="button"
+                variant="outline"
+                className="self-start"
+                onClick={recognizeUrl}
+                disabled={recognizing || !sourceUrl.trim()}
+              >
+                {recognizing ? "识别中…" : "根据链接自动填写"}
+              </Button>
             </div>
           ) : null}
 

@@ -11,12 +11,27 @@ from app.crud import product as product_crud
 from app.db.session import get_db
 from app.models.product import ProductSource, ProductSourceStatus, ProductSourceType
 from app.schemas.product import ProductSourceOut
-from app.schemas.source import SourceTextOut, UrlSourceCreate
+from app.schemas.source import SourceTextOut, UrlSourceCreate, UrlSourcePreview
 from app.services.ocr import extract_image_text
 from app.services.pdf import extract_pdf_text
-from app.services.url import fetch_url_text, normalize_shared_url
+from app.services.url import fetch_url_text, infer_product_fields, normalize_shared_url
 
 router = APIRouter()
+
+
+@router.post("/sources/url/preview", response_model=UrlSourcePreview)
+def preview_url_source(
+    payload: UrlSourceCreate,
+    auth: AuthContext = Depends(get_auth_context),
+) -> UrlSourcePreview:
+    del auth
+    try:
+        url = normalize_shared_url(payload.url)
+        title, _ = fetch_url_text(url)
+        fields = infer_product_fields(payload.url, title)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return UrlSourcePreview(url=url, **fields)
 
 
 @router.post("/products/{product_id}/sources", response_model=ProductSourceOut, status_code=201)

@@ -18,3 +18,11 @@ class SourceTextOut(BaseModel):
 
 class UrlSourceCreate(BaseModel):
     url: str = Field(min_length=1, max_length=2048)
+
+
+class UrlSourcePreview(BaseModel):
+    url: str
+    name: str
+    category: str = ""
+    summary: str = ""
+    price: float | None = None

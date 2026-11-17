@@ -25,6 +25,22 @@ def normalize_shared_url(value: str) -> str:
     return match.group(0).rstrip(".,;:!?，。；：！？）)]}")
 
 
+def infer_product_fields(value: str, page_title: str) -> dict[str, str | float | None]:
+    share_text = URL_PATTERN.sub("", value.replace(r"\://", "://"))
+    share_text = re.sub(r"^\s*\d+\s*[-、.]\s*", "", share_text).strip()
+    share_text = re.split(r"(?:戳|点击)?链接", share_text, maxsplit=1)[0].strip(" ，,。")
+    generic_titles = {"商品详情", "抖音", "douyin", ""}
+    name = share_text or page_title.strip()
+    if page_title.strip().lower() not in generic_titles and not share_text:
+        name = page_title.strip()
+    name = name[:120]
+    combined = f"{share_text} {page_title}"
+    category = "旅游线路" if any(word in combined for word in ("游", "旅行", "酒店", "景区", "冰川")) else ""
+    price_match = re.search(r"(?:¥|￥)\s*(\d+(?:\.\d{1,2})?)|(\d+(?:\.\d{1,2})?)\s*元", combined)
+    price = float(next(group for group in price_match.groups() if group)) if price_match else None
+    return {"name": name, "category": category, "summary": share_text[:500], "price": price}
+
+
 def _validate_public_url(url: str) -> None:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"} or not parsed.hostname:

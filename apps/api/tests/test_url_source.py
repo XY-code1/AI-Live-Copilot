@@ -56,3 +56,15 @@ def test_create_url_source_extracts_escaped_link_from_share_text(client, monkeyp
     assert response.json()["reference"] == captured[0]
     source = client.get(f"/api/v1/sources/{response.json()['id']}").json()
     assert "四毕达8人小团" in source["text"]
+
+
+def test_preview_share_text_infers_product_fields(client, monkeypatch):
+    monkeypatch.setattr("app.api.sources.fetch_url_text", lambda url: ("商品详情", ""))
+    response = client.post(
+        "/api/v1/sources/url/preview",
+        json={"url": "1- 【四毕达8人小团】达古冰川三日游，戳链接 https\\://v.douyin.com/demo/"},
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["name"] == "【四毕达8人小团】达古冰川三日游"
+    assert response.json()["category"] == "旅游线路"
+    assert response.json()["url"] == "https://v.douyin.com/demo/"
