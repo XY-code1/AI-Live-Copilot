@@ -563,7 +563,7 @@ export function ProductDetailClient({ productId }: { productId: string }) {
                           </span>
                           {segment.kind === "table" && segment.structured?.rows ? (
                             <span className="ml-2 text-muted-foreground">
-                              表格 {String(segment.structured.rows.length)} 行
+                              表格 {String((segment.structured.rows as unknown[]).length)} 行
                             </span>
                           ) : (
                             <p className="mt-0.5 line-clamp-2 whitespace-pre-wrap">
