@@ -19,12 +19,13 @@ import {
   X,
 } from "lucide-react";
 
-import { ApiError, getSourceText, productApi, uploadProductSource } from "@/lib/api";
+import { ApiError, getSourceText, productApi, sourceApi, uploadProductSource } from "@/lib/api";
 import type {
   ConfirmationStatus,
   Product,
   ProductSource,
   ProductSourceType,
+  SourceSegment,
   SourceText,
 } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -83,6 +84,7 @@ export function ProductDetailClient({ productId }: { productId: string }) {
   const [attrValue, setAttrValue] = useState("");
   const [attrLoading, setAttrLoading] = useState(false);
   const [previews, setPreviews] = useState<Record<string, Preview>>({});
+  const [segments, setSegments] = useState<Record<string, SourceSegment[]>>({});
 
   useEffect(() => {
     let active = true;
@@ -198,6 +200,23 @@ export function ProductDetailClient({ productId }: { productId: string }) {
       setUploadError(caught instanceof ApiError ? caught.message : "AI 提取失败");
     } finally {
       setExtracting(false);
+    }
+  }
+
+  async function toggleSegments(source: ProductSource) {
+    if (segments[source.id]) {
+      setSegments((current) => {
+        const next = { ...current };
+        delete next[source.id];
+        return next;
+      });
+      return;
+    }
+    try {
+      const list = await sourceApi.segments(source.id);
+      setSegments((current) => ({ ...current, [source.id]: list }));
+    } catch (caught) {
+      setUploadError(caught instanceof ApiError ? caught.message : "读取分段失败");
     }
   }
 
@@ -488,12 +507,19 @@ export function ProductDetailClient({ productId }: { productId: string }) {
                     <span className="text-xs text-muted-foreground">
                       {formatDate(source.createdAt)}
                     </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleSegments(source)}
+                    >
+                      分段
+                    </Button>
                     {hasText ? (
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => togglePreview(source)}
-                      >
+                    >
                         查看文本
                         <ChevronDown
                           className={`size-4 transition-transform ${preview?.text ? "rotate-180" : ""}`}
@@ -511,6 +537,27 @@ export function ProductDetailClient({ productId }: { productId: string }) {
                     <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted/50 p-3 text-xs leading-relaxed whitespace-pre-wrap">
                       {preview.text || "（未提取到文本）"}
                     </pre>
+                  ) : null}
+                  {segments[source.id] ? (
+                    <div className="flex flex-col gap-1 rounded-md border border-border bg-muted/30 p-2">
+                      {segments[source.id].map((segment) => (
+                        <div key={segment.id} className="text-xs">
+                          <span className="font-medium text-muted-foreground">
+                            {segment.kind}
+                            {segment.pageNo ? ` · 第 ${segment.pageNo} 页` : ""}
+                          </span>
+                          {segment.kind === "table" && segment.structured?.rows ? (
+                            <span className="ml-2 text-muted-foreground">
+                              表格 {String(segment.structured.rows.length)} 行
+                            </span>
+                          ) : (
+                            <p className="mt-0.5 line-clamp-2 whitespace-pre-wrap">
+                              {segment.content || "（无文本，可能需要 OCR）"}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   ) : null}
                 </div>
               );

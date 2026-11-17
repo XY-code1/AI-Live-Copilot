@@ -26,6 +26,7 @@ from app.schemas.script import (
     SectionRewriteOutput,
     SectionRewriteRequest,
 )
+from app.schemas.segment import SegmentOut
 from app.schemas.source import SourceTextOut, UrlSourceCreate
 from app.schemas.user import AuthResponse, UserCreate, UserLogin, UserOut
 from app.schemas.verification import ScriptVerificationOut, VerificationIssueOut
@@ -57,6 +58,7 @@ __all__ = [
     "ScriptVersionCreate",
     "SectionRewriteOutput",
     "SectionRewriteRequest",
+    "SegmentOut",
     "SourceTextOut",
     "UrlSourceCreate",
     "UserCreate",

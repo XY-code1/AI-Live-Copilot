@@ -10,6 +10,7 @@ import type {
   ScriptSection,
   ScriptSectionKind,
   ScriptVerification,
+  SourceSegment,
   SourceText,
   VerificationIssue,
 } from "@/types";
@@ -491,4 +492,9 @@ export const authApi = {
     return data;
   },
   me: () => request<AuthUser>("/auth/me"),
+};
+
+export const sourceApi = {
+  segments: (id: string) =>
+    request<SourceSegment[]>(`/sources/${id}/segments`),
 };

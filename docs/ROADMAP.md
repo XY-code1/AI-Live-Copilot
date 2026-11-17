@@ -163,4 +163,4 @@ P1's mock data shape must anticipate P2's schema. P2's schema must anticipate P3
 
 Plan: [PARSING-ROADMAP.md](PARSING-ROADMAP.md).
 
-**P0 delivered (2026-11-17):** `ingestion_runs` table + source evidence (migration 014); PDF/image/URL imports record parser version, SHA-256 content hash, snapshot path, final URL and redirect chain; failed imports record a failed run; `GET /products/{id}/ingestion-runs` exposes the run history; product detail shows parser/hash. Next: P1 static deep parsing.
+**P0 delivered (2026-11-17):** `ingestion_runs` table + source evidence (migration 014); PDF/image/URL imports record parser version, SHA-256 content hash, snapshot path, final URL and redirect chain; failed imports record a failed run; `GET /products/{id}/ingestion-runs` exposes the run history; product detail shows parser/hash. Next: P2 dynamic pages. **P1 done (2026-11-17):** `source_segments` (migration 015) with PDF page text + tables, URL headings/paragraphs/tables/JSON-LD, OCR fallback flag for empty pages; `GET /sources/{id}/segments`; product detail shows segments.

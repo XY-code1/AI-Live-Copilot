@@ -13,10 +13,13 @@ from app.crud import ingestion as ingestion_crud
 from app.crud import product as product_crud
 from app.db.session import get_db
 from app.models.product import ProductSource, ProductSourceStatus, ProductSourceType
+from app.models.segment import SourceSegment
 from app.schemas.product import ProductSourceOut
+from app.schemas.segment import SegmentOut
 from app.schemas.source import SourceTextOut, UrlSourceCreate, UrlSourcePreview
 from app.services.ocr import extract_image_text
 from app.services.pdf import extract_pdf_text
+from app.services.segments import image_segments, pdf_segments, url_segments
 from app.services.url import (
     fetch_url_page,
     fetch_url_text,
@@ -98,6 +101,20 @@ def upload_source(
     )
     db.add(source)
     db.flush()
+    segments = (
+        pdf_segments(data) if source_type == ProductSourceType.pdf else image_segments(text)
+    )
+    for draft in segments:
+        db.add(
+            SourceSegment(
+                source_id=source.id,
+                kind=draft.kind,
+                page_no=draft.page_no,
+                position=draft.position,
+                content=draft.content,
+                structured=draft.structured,
+            )
+        )
     ingestion_crud.finish_run(
         db,
         run,
@@ -169,6 +186,17 @@ def create_url_source(
     )
     db.add(source)
     db.flush()
+    for draft in url_segments(html):
+        db.add(
+            SourceSegment(
+                source_id=source.id,
+                kind=draft.kind,
+                page_no=draft.page_no,
+                position=draft.position,
+                content=draft.content,
+                structured=draft.structured,
+            )
+        )
     ingestion_crud.finish_run(
         db,
         run,
@@ -181,3 +209,13 @@ def create_url_source(
     db.commit()
     db.refresh(source)
     return source
+
+
+@router.get("/sources/{source_id}/segments", response_model=list[SegmentOut])
+def list_segments(
+    source_id: UUID, db: Session = Depends(get_db), auth: AuthContext = Depends(get_auth_context)
+) -> list[SegmentOut]:
+    source = db.get(ProductSource, source_id)
+    if source is None or source.product.workspace_id != auth.workspace_id:
+        raise HTTPException(status_code=404, detail="资料不存在")
+    return sorted(source.segments, key=lambda segment: segment.position)

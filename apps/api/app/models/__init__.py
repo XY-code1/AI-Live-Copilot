@@ -22,6 +22,7 @@ from app.models.script import (
     ScriptSectionKind,
     ScriptStatus,
 )
+from app.models.segment import SourceSegment
 from app.models.user import User
 from app.models.verification import (
     IssueSeverity,
@@ -55,6 +56,7 @@ __all__ = [
     "ScriptSectionKind",
     "ScriptStatus",
     "ScriptVerification",
+    "SourceSegment",
     "User",
     "VerificationIssue",
     "VerificationStatus",

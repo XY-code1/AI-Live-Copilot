@@ -202,3 +202,13 @@ export interface ScriptVerification {
   issues: VerificationIssue[];
   createdAt: string;
 }
+
+export interface SourceSegment {
+  id: ID;
+  sourceId: ID;
+  kind: "page" | "heading" | "paragraph" | "table" | "jsonld" | "text";
+  pageNo?: number | null;
+  position: number;
+  content: string;
+  structured?: Record<string, unknown> | null;
+}

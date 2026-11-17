@@ -24,6 +24,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.ingestion import IngestionRun
     from app.models.script import Script
+    from app.models.segment import SourceSegment
 
 if TYPE_CHECKING:
     from app.models.comparison import Comparison
@@ -148,6 +149,9 @@ class ProductSource(Base):
     )
     attributes: Mapped[list["ProductAttribute"]] = relationship(
         back_populates="source", lazy="selectin"
+    )
+    segments: Mapped[list["SourceSegment"]] = relationship(
+        cascade="all, delete-orphan", lazy="selectin"
     )
 
 
