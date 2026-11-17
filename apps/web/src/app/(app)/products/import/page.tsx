@@ -206,11 +206,11 @@ export default function ProductImportPage() {
                   <Input
                     value={url}
                     onChange={(event) => setUrl(event.target.value)}
-                    placeholder="https:// 商品详情页链接"
+                    placeholder="粘贴商品链接或平台完整分享文案"
                     aria-label="商品链接"
                   />
                   <p className="text-xs text-muted-foreground">
-                    系统会抓取页面正文并保存，供 AI 提取使用。
+                    支持含 https\:// 的抖音分享文案；系统会自动提取链接并保存正文。
                   </p>
                 </div>
               )}

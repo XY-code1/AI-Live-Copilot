@@ -22,6 +22,7 @@ export function ProductForm({ product, submitLabel }: ProductFormProps) {
   const [category, setCategory] = useState(product?.category ?? "");
   const [price, setPrice] = useState(product?.price?.toString() ?? "");
   const [summary, setSummary] = useState(product?.summary ?? "");
+  const [sourceUrl, setSourceUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +40,9 @@ export function ProductForm({ product, submitLabel }: ProductFormProps) {
       const saved = product
         ? await productApi.update(product.id, payload)
         : await productApi.create(payload);
+      if (!product && sourceUrl.trim()) {
+        await productApi.createUrlSource(saved.id, sourceUrl.trim());
+      }
       router.push(`/products/${saved.id}`);
       router.refresh();
     } catch (caught) {
@@ -96,6 +100,22 @@ export function ProductForm({ product, submitLabel }: ProductFormProps) {
               placeholder="一句话描述商品卖点"
             />
           </div>
+
+          {!product ? (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="source-url">商品链接或分享文案（可选）</Label>
+              <Textarea
+                id="source-url"
+                value={sourceUrl}
+                onChange={(event) => setSourceUrl(event.target.value)}
+                placeholder="可直接粘贴抖音等平台的完整分享文案，系统会自动提取链接"
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                创建商品后将自动抓取链接，并把分享文案保存为商品资料。
+              </p>
+            </div>
+          ) : null}
 
           {error ? (
             <p className="text-sm text-destructive" role="alert">
