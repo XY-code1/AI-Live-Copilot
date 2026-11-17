@@ -1,8 +1,8 @@
-import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 const PUBLIC_PATHS = ["/login", "/register"];
 
-export default function proxy(request: NextRequest, event: NextFetchEvent) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get("ailc_token")?.value;
 

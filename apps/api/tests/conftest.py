@@ -5,9 +5,15 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import app.models
+from app.core.config import settings
 from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
+
+
+@pytest.fixture(autouse=True)
+def dev_auth(monkeypatch):
+    monkeypatch.setattr(settings, "auth_mode", "dev")
 
 
 @pytest.fixture()

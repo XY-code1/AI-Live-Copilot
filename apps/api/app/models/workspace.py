@@ -8,7 +8,7 @@ from app.db.base import Base
 
 
 class Workspace(Base):
-    """Team space backed by Clerk identities."""
+    """Team space containing isolated user data."""
 
     __tablename__ = "workspaces"
 

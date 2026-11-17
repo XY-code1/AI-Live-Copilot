@@ -1,22 +1,23 @@
 "use client";
 
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
+import { clearAuthToken } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 
 export function AuthControls() {
-  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) return null;
+  const router = useRouter();
+
+  function logout() {
+    clearAuthToken();
+    router.push("/login");
+    router.refresh();
+  }
+
   return (
-    <>
-      <SignedOut>
-        <SignInButton mode="modal">
-          <Button size="sm">登录</Button>
-        </SignInButton>
-      </SignedOut>
-      <SignedIn>
-        <UserButton />
-      </SignedIn>
-    </>
+    <Button size="sm" variant="outline" onClick={logout}>
+      退出
+    </Button>
   );
 }
 
