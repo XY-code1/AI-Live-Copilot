@@ -55,7 +55,7 @@ class Competitor(Base):
     __table_args__ = (Index("ix_competitors_workspace_id", "workspace_id"),)
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    workspace_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     brand: Mapped[str] = mapped_column(String(120), nullable=False, default="")
     price: Mapped[float | None] = mapped_column(Numeric(12, 2), nullable=True)
@@ -79,7 +79,7 @@ class Comparison(Base):
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
-    workspace_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
     product_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("products.id", ondelete="CASCADE"), nullable=False
     )

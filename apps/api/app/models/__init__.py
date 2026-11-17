@@ -28,7 +28,7 @@ from app.models.verification import (
     VerificationIssue,
     VerificationStatus,
 )
-from app.models.workspace import Workspace
+from app.models.workspace import Workspace, WorkspaceMembership
 
 __all__ = [
     "AdvantageSide",
@@ -54,4 +54,5 @@ __all__ = [
     "VerificationIssue",
     "VerificationStatus",
     "Workspace",
+    "WorkspaceMembership",
 ]

@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.attributes import router as attributes_router
+from app.api.auth import router as auth_router
 from app.api.comparisons import router as comparisons_router
 from app.api.competitors import router as competitors_router
 from app.api.extraction import router as extraction_router
@@ -10,6 +11,7 @@ from app.api.sources import router as sources_router
 from app.api.verifications import router as verifications_router
 
 api_router = APIRouter()
+api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 api_router.include_router(products_router, prefix="/products", tags=["products"])
 api_router.include_router(sources_router, tags=["sources"])

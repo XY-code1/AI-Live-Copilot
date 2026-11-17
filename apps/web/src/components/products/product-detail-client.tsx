@@ -293,7 +293,7 @@ export function ProductDetailClient({ productId }: { productId: string }) {
         <CardHeader>
           <CardTitle>上传资料</CardTitle>
           <CardDescription>
-            支持 PDF。上传后自动提取文本并保存，供后续 AI 结构化提取使用。
+            支持 PDF 和图片 OCR。上传后自动提取文本并保存，供后续 AI 结构化提取使用。
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -301,7 +301,7 @@ export function ProductDetailClient({ productId }: { productId: string }) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="application/pdf,.pdf"
+              accept="application/pdf,image/png,image/jpeg,image/webp,.pdf,.png,.jpg,.jpeg,.webp"
               className="hidden"
               onChange={(event) => handleUpload(event.target.files)}
             />
@@ -311,7 +311,7 @@ export function ProductDetailClient({ productId }: { productId: string }) {
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
             >
-              <Upload /> {uploading ? "上传中…" : "选择 PDF"}
+              <Upload /> {uploading ? "上传中…" : "选择 PDF / 图片"}
             </Button>
             <span className="text-xs text-muted-foreground">
               文件将保存到本地存储，提取文本后可在下方查看。

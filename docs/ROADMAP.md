@@ -23,7 +23,7 @@ Build in the order a real SaaS product is built: foundation → usable interface
 | P3 | Product intelligence & competitive comparison | **In progress** | Attribute normalization, diff matrix, evidence-backed advantages |
 | P4 | AI script workspace | **In progress** | DeepSeek script generation, editing, versioning, export |
 | P5 | Fact verification & content assets | **Done** | Claim checking, risk wording, traceability, export |
-| P6 | Full business loop & deployment | — | Auth, isolation, security, observability, cloud deploy, E2E |
+| P6 | Full business loop & deployment | **Code complete** | Auth, isolation, security, observability, Render Blueprint, E2E |
 
 ## 3. Phase details
 
@@ -71,7 +71,7 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 
 **Goal:** the first real business module.
 
-**Progress (2026-11-16):** initial schema delivered — `workspaces`, `products`, `product_sources`, `product_attributes` with source pointers, confirmation status and reserved `workspace_id`; Alembic migration `0001`; Pydantic schemas aligned with the front-end types; verified by running the migration (SQLite) and `ruff`. Core loop done: manual create, PDF upload, link import, manual attributes, AI extraction, source traceability. **Import page is now a real flow** (pick a product → upload PDF / import link). Image OCR remains deferred by decision. **Update:** product CRUD endpoints and front-end wiring are done — list/detail/new/edit/delete now use the real API (`/api/v1/products`), verified by pytest and a live API smoke test. **P2.3 done:** PDF upload → PyMuPDF extraction → `ProductSource.content_text/page_count` stored, with a text-reading endpoint and a detail-page upload/preview UI. **P2.4 done:** manual “AI 提取” → DeepSeek structured output (travel fields) → Pydantic validation + retry → `ProductAttribute` with `origin=ai` and `source_id`; AI attributes replace previous AI ones, manual attributes preserved. **P2.5 done:** URL import (fetch + store text), manual attribute add/delete, `ProductAttribute.source_reference` + migration `0004`; detail page can import links, add/delete attributes, and shows origin + source fragment.
+**Progress:** product CRUD, PDF/PaddleOCR image/link/manual import, AI extraction, source traceability, and real frontend/API wiring are complete. Upload limits, file validation, SSRF protection, and workspace ownership checks are included in the V1.1 security pass.
 
 **Order:**
 
@@ -139,6 +139,8 @@ Monorepo, compose stack (postgres/api/web), FastAPI skeleton, Next.js app, DeepS
 **Engineering:** authentication and workspace permissions; data isolation; API authorization; upload security; logging and exception monitoring; AI timeout/retry/error handling; migration testing; Docker deployment; cloud secrets management; end-to-end tests; user trial.
 
 **Acceptance:** full loop passes E2E; a second user cannot read another workspace's data; deployment runs from compose/cloud with secrets externalized.
+
+**Delivered (2026-11-17):** Clerk JWT integration with a local development mode, enforced workspace isolation, PaddleOCR image ingestion, hardened upload and URL import boundaries, JSON request logging and Sentry hooks, GitHub Actions, Playwright core-flow coverage, migration verification, and a Render Blueprint with persistent uploads. Final public deployment and custom-domain verification require the owner's Clerk, Sentry, Render, DNS, and DeepSeek credentials.
 
 ## 4. Cross-phase rules
 

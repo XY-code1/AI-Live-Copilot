@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.auth import AuthContext, get_auth_context
 from app.crud import script as script_crud
 from app.db.session import get_db
 from app.models.verification import ScriptVerification
@@ -14,8 +15,8 @@ router = APIRouter()
 
 
 @router.post("/scripts/{script_id}/verify", response_model=ScriptVerificationOut, status_code=201)
-def verify(script_id: UUID, db: Session = Depends(get_db)) -> ScriptVerificationOut:
-    script = script_crud.get_script(db, script_id)
+def verify(script_id: UUID, db: Session = Depends(get_db), auth: AuthContext = Depends(get_auth_context)) -> ScriptVerificationOut:
+    script = script_crud.get_script(db, script_id, auth.workspace_id)
     if script is None:
         raise HTTPException(status_code=404, detail="话术不存在")
     try:
@@ -28,9 +29,9 @@ def verify(script_id: UUID, db: Session = Depends(get_db)) -> ScriptVerification
     "/scripts/{script_id}/verifications", response_model=list[ScriptVerificationOut]
 )
 def list_verifications(
-    script_id: UUID, db: Session = Depends(get_db)
+    script_id: UUID, db: Session = Depends(get_db), auth: AuthContext = Depends(get_auth_context)
 ) -> list[ScriptVerificationOut]:
-    script = script_crud.get_script(db, script_id)
+    script = script_crud.get_script(db, script_id, auth.workspace_id)
     if script is None:
         raise HTTPException(status_code=404, detail="话术不存在")
     statement = (

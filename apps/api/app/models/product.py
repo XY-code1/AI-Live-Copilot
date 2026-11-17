@@ -72,7 +72,7 @@ class Product(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     # Reserved for multi-tenant isolation; enforced in P6.
-    workspace_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
     category: Mapped[str] = mapped_column(String(120), nullable=False, default="")
     summary: Mapped[str] = mapped_column(Text, nullable=False, default="")

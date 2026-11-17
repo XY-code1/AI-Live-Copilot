@@ -55,7 +55,7 @@ class Script(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     series_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False, default=uuid.uuid4)
-    workspace_id: Mapped[uuid.UUID | None] = mapped_column(Uuid, nullable=True)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(Uuid, nullable=False)
     product_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("products.id", ondelete="CASCADE"), nullable=False
     )

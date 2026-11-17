@@ -8,24 +8,29 @@ from app.models.script import Script, ScriptSection
 from app.schemas.script import ScriptVersionCreate
 
 
-def get_script(db: Session, script_id: UUID) -> Script | None:
-    return db.get(Script, script_id)
+def get_script(db: Session, script_id: UUID, workspace_id: UUID | None = None) -> Script | None:
+    statement = select(Script).where(Script.id == script_id)
+    if workspace_id is not None:
+        statement = statement.where(Script.workspace_id == workspace_id)
+    return db.scalar(statement)
 
 
-def list_scripts(db: Session, product_id: UUID | None = None) -> list[Script]:
-    statement = select(Script)
+def list_scripts(db: Session, workspace_id: UUID, product_id: UUID | None = None) -> list[Script]:
+    statement = select(Script).where(Script.workspace_id == workspace_id)
     if product_id is not None:
         statement = statement.where(Script.product_id == product_id)
     statement = statement.order_by(Script.created_at.desc())
     return list(db.scalars(statement).all())
 
 
-def list_versions(db: Session, series_id: UUID) -> list[Script]:
+def list_versions(db: Session, series_id: UUID, workspace_id: UUID | None = None) -> list[Script]:
     statement = (
         select(Script)
         .where(Script.series_id == series_id)
         .order_by(Script.version.desc())
     )
+    if workspace_id is not None:
+        statement = statement.where(Script.workspace_id == workspace_id)
     return list(db.scalars(statement).all())
 
 

@@ -16,16 +16,19 @@ from app.schemas.comparison import (
 )
 
 
-def list_competitors(db: Session) -> list[Competitor]:
-    return list(db.scalars(select(Competitor).order_by(Competitor.created_at.desc())).all())
+def list_competitors(db: Session, workspace_id: UUID) -> list[Competitor]:
+    return list(db.scalars(select(Competitor).where(Competitor.workspace_id == workspace_id).order_by(Competitor.created_at.desc())).all())
 
 
-def get_competitor(db: Session, competitor_id: UUID) -> Competitor | None:
-    return db.get(Competitor, competitor_id)
+def get_competitor(db: Session, competitor_id: UUID, workspace_id: UUID | None = None) -> Competitor | None:
+    statement = select(Competitor).where(Competitor.id == competitor_id)
+    if workspace_id is not None:
+        statement = statement.where(Competitor.workspace_id == workspace_id)
+    return db.scalar(statement)
 
 
-def create_competitor(db: Session, payload: CompetitorCreate) -> Competitor:
-    competitor = Competitor(**payload.model_dump())
+def create_competitor(db: Session, payload: CompetitorCreate, workspace_id: UUID) -> Competitor:
+    competitor = Competitor(**payload.model_dump(exclude={"workspace_id"}), workspace_id=workspace_id)
     db.add(competitor)
     db.commit()
     db.refresh(competitor)
@@ -45,26 +48,29 @@ def delete_competitor(db: Session, competitor: Competitor) -> None:
     db.commit()
 
 
-def list_comparisons(db: Session, product_id: UUID) -> list[Comparison]:
+def list_comparisons(db: Session, product_id: UUID, workspace_id: UUID) -> list[Comparison]:
     statement = (
         select(Comparison)
-        .where(Comparison.product_id == product_id)
+        .where(Comparison.product_id == product_id, Comparison.workspace_id == workspace_id)
         .order_by(Comparison.created_at.desc())
     )
     return list(db.scalars(statement).all())
 
 
-def list_all_comparisons(db: Session) -> list[Comparison]:
-    statement = select(Comparison).order_by(Comparison.created_at.desc())
+def list_all_comparisons(db: Session, workspace_id: UUID) -> list[Comparison]:
+    statement = select(Comparison).where(Comparison.workspace_id == workspace_id).order_by(Comparison.created_at.desc())
     return list(db.scalars(statement).all())
 
 
-def get_comparison(db: Session, comparison_id: UUID) -> Comparison | None:
-    return db.get(Comparison, comparison_id)
+def get_comparison(db: Session, comparison_id: UUID, workspace_id: UUID | None = None) -> Comparison | None:
+    statement = select(Comparison).where(Comparison.id == comparison_id)
+    if workspace_id is not None:
+        statement = statement.where(Comparison.workspace_id == workspace_id)
+    return db.scalar(statement)
 
 
-def create_comparison(db: Session, payload: ComparisonCreate) -> Comparison:
-    comparison = Comparison(**payload.model_dump())
+def create_comparison(db: Session, payload: ComparisonCreate, workspace_id: UUID) -> Comparison:
+    comparison = Comparison(**payload.model_dump(exclude={"workspace_id"}), workspace_id=workspace_id)
     db.add(comparison)
     db.commit()
     db.refresh(comparison)

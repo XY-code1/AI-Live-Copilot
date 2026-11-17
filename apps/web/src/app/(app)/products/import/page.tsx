@@ -90,7 +90,7 @@ export default function ProductImportPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="商品导入"
-        description="选择目标商品，上传 PDF 或导入商品链接，系统会保存来源并可供 AI 提取。"
+        description="选择目标商品，上传 PDF/图片或导入商品链接，系统会保存来源并可供 AI 提取。"
       />
 
       {loadError ? (
@@ -151,7 +151,7 @@ export default function ProductImportPage() {
           <Card>
             <CardHeader>
               <CardTitle>导入方式</CardTitle>
-              <CardDescription>PDF 与链接现在可用；图片识别将在后续支持。</CardDescription>
+              <CardDescription>支持 PDF、图片 OCR 和安全链接导入。</CardDescription>
             </CardHeader>
             <CardContent className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
@@ -165,7 +165,7 @@ export default function ProductImportPage() {
                       : "border-border text-muted-foreground hover:bg-accent/50",
                   )}
                 >
-                  <FileText className="size-4" /> PDF / 文档
+                  <FileText className="size-4" /> PDF / 图片
                 </button>
                 <button
                   type="button"
@@ -188,7 +188,7 @@ export default function ProductImportPage() {
                   <Upload className="size-5 text-muted-foreground" />
                   <div>
                     <p className="text-sm font-medium">
-                      {file ? file.name : "点击选择 PDF 文件"}
+                      {file ? file.name : "点击选择 PDF 或图片"}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       文件将保存到本地存储，并提取文本用于 AI 解析
@@ -196,7 +196,7 @@ export default function ProductImportPage() {
                   </div>
                   <input
                     type="file"
-                    accept="application/pdf,.pdf"
+                    accept="application/pdf,image/png,image/jpeg,image/webp,.pdf,.png,.jpg,.jpeg,.webp"
                     className="hidden"
                     onChange={(event) => setFile(event.target.files?.[0] ?? null)}
                   />
@@ -268,7 +268,7 @@ export default function ProductImportPage() {
                     <Badge variant="muted">后续支持</Badge>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    OCR 与多模态识别将作为后续批次加入。
+                    已启用 PaddleOCR 中文识别，识别文本会作为可追溯商品资料保存。
                   </p>
                 </div>
               </CardContent>

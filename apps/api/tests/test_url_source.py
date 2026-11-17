@@ -1,4 +1,3 @@
-import httpx
 from conftest import create_product
 
 HTML = """
@@ -8,10 +7,10 @@ HTML = """
 
 
 def test_create_url_source(client, monkeypatch):
-    def fake_get(url, **kwargs):
-        return httpx.Response(200, text=HTML, request=httpx.Request("GET", url))
-
-    monkeypatch.setattr("app.services.url.httpx.get", fake_get)
+    monkeypatch.setattr(
+        "app.api.sources.fetch_url_text",
+        lambda url: ("川西五日游 详情页", "川西五日游\n出行天数：5 天 4 晚\n出行方式：小团"),
+    )
     product_id = create_product(client)
 
     response = client.post(
@@ -29,10 +28,10 @@ def test_create_url_source(client, monkeypatch):
 
 
 def test_url_source_fetch_failure_returns_400(client, monkeypatch):
-    def failing_get(url, **kwargs):
-        raise httpx.ConnectError("boom", request=httpx.Request("GET", url))
+    def failing_fetch(url):
+        raise ValueError("boom")
 
-    monkeypatch.setattr("app.services.url.httpx.get", failing_get)
+    monkeypatch.setattr("app.api.sources.fetch_url_text", failing_fetch)
     product_id = create_product(client)
     response = client.post(
         f"/api/v1/products/{product_id}/sources/url",

@@ -16,6 +16,11 @@ import type {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const API_PREFIX = "/api/v1";
+let accessTokenProvider: () => Promise<string | null> = async () => null;
+
+export function setAccessTokenProvider(provider: () => Promise<string | null>) {
+  accessTokenProvider = provider;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -43,10 +48,12 @@ async function errorFrom(response: Response): Promise<string> {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = await accessTokenProvider();
   const response = await fetch(`${BASE_URL}${API_PREFIX}${path}`, {
     ...init,
     headers: {
       "content-type": "application/json",
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
       ...(init?.headers ?? {}),
     },
   });
@@ -162,9 +169,10 @@ export async function uploadProductSource(
 ): Promise<ProductSource> {
   const form = new FormData();
   form.append("file", file);
+  const token = await accessTokenProvider();
   const response = await fetch(
     `${BASE_URL}${API_PREFIX}/products/${productId}/sources`,
-    { method: "POST", body: form },
+    { method: "POST", body: form, headers: token ? { authorization: `Bearer ${token}` } : undefined },
   );
   if (!response.ok) {
     throw new ApiError(response.status, await errorFrom(response));

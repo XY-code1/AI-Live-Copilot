@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core.auth import AuthContext, get_auth_context
 from app.crud import product as product_crud
 from app.db.session import get_db
 from app.schemas.product import ProductOut
@@ -12,8 +13,8 @@ router = APIRouter()
 
 
 @router.post("/products/{product_id}/extract", response_model=ProductOut)
-def extract_product(product_id: UUID, db: Session = Depends(get_db)) -> ProductOut:
-    product = product_crud.get_product(db, product_id)
+def extract_product(product_id: UUID, db: Session = Depends(get_db), auth: AuthContext = Depends(get_auth_context)) -> ProductOut:
+    product = product_crud.get_product(db, product_id, auth.workspace_id)
     if product is None:
         raise HTTPException(status_code=404, detail="商品不存在")
     try:

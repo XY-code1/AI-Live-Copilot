@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default function Home() {
-  redirect("/dashboard");
+  return <Link href="/dashboard">进入 AI Live Copilot</Link>;
 }

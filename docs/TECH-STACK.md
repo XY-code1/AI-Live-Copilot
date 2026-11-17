@@ -24,7 +24,7 @@ Two principles govern every layer:
 | 2 | Backend | Python, FastAPI, Pydantic, SQLAlchemy, Alembic | P0 (initialized) |
 | 3 | Database | PostgreSQL (system of record), Redis (on demand), pgvector (future) | P0 partial / on demand |
 | 4 | AI core | DeepSeek API, Provider Adapter, Structured Output, Prompt Engineering | P0 (provider skeleton) |
-| 5 | File processing | PyMuPDF, OCR Adapter, multimodal model, URL parser | To build |
+| 5 | File processing | PyMuPDF, PaddleOCR Adapter, URL parser | V1.1 |
 | 6 | Async tasks | Celery, Redis, background job records | On demand |
 | 7 | Infrastructure | Docker, Docker Compose, Git, GitHub, Ruff, ESLint, pytest | P0 (basic) |
 | 8 | Desktop & realtime | Tauri 2, Rust, WebView, Cloud ASR, WebSocket, audio capture | Future |
@@ -96,10 +96,10 @@ The Provider Adapter is the seam that lets future providers (other Chinese or in
 
 | Technology | Purpose | Why this choice | Stage |
 |---|---|---|---|
-| PyMuPDF | PDF text and layout extraction | Fast, pure-Python-friendly PDF parsing | To build |
-| OCR Adapter | Text recognition from images and scans | Travel itineraries and posters are often images | To build |
+| PyMuPDF | PDF text and layout extraction | Fast, pure-Python-friendly PDF parsing | V1.1 |
+| OCR Adapter | PaddleOCR text recognition from images and scans | Travel itineraries and posters are often images | V1.1 |
 | Multimodal model | Complex layout and image understanding | OCR alone misses structure and context | To build |
-| URL parser | Extract product page content | Link-based import is a primary input | To build |
+| URL parser | Extract product page content with SSRF and size controls | Link-based import is a primary input | V1.1 |
 | Pydantic | Normalize all extractions | One canonical product schema regardless of source | To build |
 
 This layer is a pipeline, not a single model call. For a travel itinerary the system must identify destination, day-by-day itinerary, attractions, hotels, inclusions, and exclusions, then normalize everything into the product data model.
@@ -195,8 +195,8 @@ Async variant (when enabled): the HTTP request returns a job id; Celery performs
 | Cache / broker | Redis | On demand |
 | LLM | DeepSeek API | Provider skeleton |
 | Model adapter | Provider Adapter | Skeleton |
-| PDF | PyMuPDF | To build |
-| OCR | OCR Adapter | To build |
+| PDF | PyMuPDF | V1.1 |
+| OCR | PaddleOCR Adapter | V1.1 |
 | Async tasks | Celery | On demand |
 | Vector search | pgvector | Future |
 | Containerization | Docker / Compose | P0 |

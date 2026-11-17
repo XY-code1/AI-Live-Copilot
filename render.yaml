@@ -1,0 +1,57 @@
+databases:
+  - name: ai-live-copilot-db
+    databaseName: ai_live_copilot
+    user: ai_live_copilot
+
+services:
+  - type: web
+    name: ai-live-copilot-api
+    runtime: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    healthCheckPath: /health
+    preDeployCommand: uv run alembic upgrade head
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-live-copilot-db
+          property: connectionString
+      - key: AUTH_MODE
+        value: clerk
+      - key: ENVIRONMENT
+        value: production
+      - key: STORAGE_DIR
+        value: /var/data/uploads
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: CLERK_ISSUER
+        sync: false
+      - key: CLERK_JWT_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+    disk:
+      name: uploads
+      mountPath: /var/data
+      sizeGB: 10
+
+  - type: web
+    name: ai-live-copilot-web
+    runtime: docker
+    dockerfilePath: ./apps/web/Dockerfile
+    dockerContext: ./apps/web
+    healthCheckPath: /
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: NEXT_PUBLIC_SENTRY_DSN
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+

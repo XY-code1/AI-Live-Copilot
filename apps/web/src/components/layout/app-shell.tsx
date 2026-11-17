@@ -11,6 +11,7 @@ import { mainNav, secondaryNav } from "./nav-items";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { currentWorkspace } from "@/lib/mock-data";
+import { AuthControls } from "@/components/auth/auth-controls";
 
 function NavLink({
   item,
@@ -91,6 +92,7 @@ function Topbar({ onOpenSidebar }: { onOpenSidebar: () => void }) {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <AuthControls />
         <button
           type="button"
           aria-label="搜索"
