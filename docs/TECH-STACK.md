@@ -23,7 +23,7 @@ Two principles govern every layer:
 | 1 | Frontend | Next.js, React, TypeScript, Tailwind CSS, shadcn/ui | P0 (initialized) |
 | 2 | Backend | Python, FastAPI, Pydantic, SQLAlchemy, Alembic | P0 (initialized) |
 | 3 | Database | PostgreSQL (system of record), Redis (on demand), pgvector (future) | P0 partial / on demand |
-| 4 | AI core | DeepSeek API, Provider Adapter, Structured Output, Prompt Engineering | P0 (provider skeleton) |
+| 4 | AI core | DeepSeek API, Provider Adapter, Structured Output, Prompt Engineering | P0 (in production use) |
 | 5 | File processing | PyMuPDF, PaddleOCR Adapter, URL parser | V1.1 |
 | 6 | Async tasks | Celery, Redis, background job records | On demand |
 | 7 | Infrastructure | Docker, Docker Compose, Git, GitHub, Ruff, ESLint, pytest | P0 (basic) |
@@ -77,10 +77,12 @@ Cross-cutting: AI engineering (prompt management, evaluation, observability) and
 
 | Technology | Purpose | Why this choice | Stage |
 |---|---|---|---|
-| DeepSeek API | First model provider | Capable and cost-effective for Chinese-language content | Provider skeleton |
-| Provider Adapter | Unified model interface | Swap providers without rewriting domain services | Skeleton (implemented, not yet called by routes) |
-| Pydantic Structured Output | Enforce JSON contracts | Fail fast on malformed model output | To build |
-| Prompt Engineering | Analysis and script generation prompts | Product quality depends on prompt design | To build |
+| DeepSeek API | First model provider | Capable and cost-effective for Chinese-language content | In use (5 services) |
+| Provider Adapter | Unified model interface (`get_provider()`) | Swap providers without rewriting domain services | In use (single entry point) |
+| Pydantic Structured Output | Enforce JSON contracts | Fail fast on malformed model output, with bounded retry | In use |
+| Prompt Engineering | Extraction, comparison, script, rewrite, verification prompts | Product quality depends on prompt design | In use |
+
+**Call chain (verified):** every AI-backed service goes through the adapter — `app/services/extraction.py`, `comparison_generation.py`, `script_generation.py`, `script_rewrite.py`, and `verification.py` all call `get_provider()` from `app/ai`. No service calls DeepSeek directly or constructs `DeepSeekProvider` itself. Adding a provider means implementing `AIProvider` and updating `get_provider()`.
 
 **Five AI tasks:**
 
@@ -148,12 +150,12 @@ Building this product is as much AI application engineering as full-stack develo
 
 | Capability | What it means here | Priority |
 |---|---|---|
-| LLM engineering | Prompt design, structured output, provider abstraction, token cost control | P0 |
-| RAG | Knowledge retrieval, embeddings, vector search | P1 |
-| AI evaluation | Script quality, factual accuracy, golden datasets, metrics | P1 |
-| AI observability | Model call logs, latency, cost, failure tracing (Langfuse optional) | P1 |
-| Prompt management | Prompt versioning, experiments, comparison | P1 |
-| Multi-tenant SaaS | Auth, team workspaces, data isolation, metering | P1+ |
+| LLM engineering | Prompt design, structured output, provider abstraction, retry/validation | P0 — built |
+| Multi-tenant SaaS | Email/password JWT auth, workspace isolation, upload/URL security | P0 — built (P6) |
+| AI observability | LLM call chain tracing, token cost, latency, failures (Langfuse) | Not built (only JSON request logs + Sentry) |
+| AI evaluation | Golden datasets, accuracy/quality metrics, regression evaluation | Not built |
+| Prompt management | Prompt versioning, experiments, comparison | Partial (prompts are constants in `app/ai/prompts.py`, no version registry) |
+| RAG | Knowledge retrieval, embeddings, vector search (pgvector) | Future — structured queries suffice for V1.1 |
 
 Guidance: do not over-build multi-tenancy in P0. Reserve `user` and `workspace` fields and row ownership; defer full permission systems and billing until the core loop is validated.
 
@@ -193,8 +195,8 @@ Async variant (when enabled): the HTTP request returns a job id; Celery performs
 | Migrations | Alembic | P0 |
 | Database | PostgreSQL | P0 |
 | Cache / broker | Redis | On demand |
-| LLM | DeepSeek API | Provider skeleton |
-| Model adapter | Provider Adapter | Skeleton |
+| LLM | DeepSeek API | In use |
+| Model adapter | Provider Adapter | In use |
 | PDF | PyMuPDF | V1.1 |
 | OCR | PaddleOCR Adapter | V1.1 |
 | Async tasks | Celery | On demand |
