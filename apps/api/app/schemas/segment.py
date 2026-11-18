@@ -14,4 +14,7 @@ class SegmentOut(BaseModel):
     position: int
     content: str
     structured: dict | list | None = None
+    source_locator: str | None = None
+    heading_level: int | None = None
+    content_hash: str | None = None
     created_at: datetime

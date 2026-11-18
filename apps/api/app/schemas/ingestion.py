@@ -17,6 +17,10 @@ class IngestionRunOut(BaseModel):
     snapshot_path: str | None = None
     final_url: str | None = None
     redirect_chain: list[str] = []
+    requested_url: str | None = None
+    fetch_duration_ms: int | None = None
+    raw_size_bytes: int | None = None
+    cleaned_text_length: int | None = None
     error: str | None = None
     started_at: datetime
     finished_at: datetime | None = None

@@ -1,5 +1,6 @@
 import hashlib
 from pathlib import Path
+from time import perf_counter
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -132,6 +133,9 @@ def upload_source(
                 position=draft.position,
                 content=draft.content,
                 structured=draft.structured,
+                source_locator=draft.locator,
+                heading_level=draft.heading_level,
+                content_hash=hashlib.sha256(draft.content.encode("utf-8")).hexdigest(),
             )
         )
     ingestion_crud.finish_run(
@@ -140,6 +144,8 @@ def upload_source(
         source_id=source.id,
         content_hash=source.content_hash,
         snapshot_path=storage_path,
+        raw_size_bytes=len(data),
+        cleaned_text_length=len(text),
     )
     db.commit()
     db.refresh(source)
@@ -179,18 +185,22 @@ def create_url_source(
         type="url",
         workspace_id=auth.workspace_id,
         parser=parser_version("url"),
+        requested_url=payload.url,
     )
     try:
         url = normalize_shared_url(payload.url)
+        fetch_started = perf_counter()
         title, text, final_url, redirects, html = fetch_url_page(url)
+        fetch_duration_ms = int((perf_counter() - fetch_started) * 1000)
         if payload.url.strip() != url:
             text = f"分享文案：\n{payload.url.strip()}\n\n网页内容：\n{text}"
-        snapshot_path = save_snapshot(html.encode("utf-8", errors="replace"), ".html")
+        raw = html.encode("utf-8", errors="replace")
+        snapshot_path = save_snapshot(raw, ".html")
     except ValueError as exc:
         ingestion_crud.fail_run(db, run, str(exc))
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    digest = hashlib.sha256(html.encode("utf-8", errors="replace")).hexdigest()
+    digest = hashlib.sha256(raw).hexdigest()
     url_assessment = assess_sufficiency(text, is_url=True)
     source = ProductSource(
         product_id=product.id,
@@ -216,6 +226,9 @@ def create_url_source(
                 position=draft.position,
                 content=draft.content,
                 structured=draft.structured,
+                source_locator=draft.locator,
+                heading_level=draft.heading_level,
+                content_hash=hashlib.sha256(draft.content.encode("utf-8")).hexdigest(),
             )
         )
     ingestion_crud.finish_run(
@@ -226,6 +239,9 @@ def create_url_source(
         snapshot_path=snapshot_path,
         final_url=final_url,
         redirect_chain=redirects,
+        fetch_duration_ms=fetch_duration_ms,
+        raw_size_bytes=len(raw),
+        cleaned_text_length=len(text),
     )
     db.commit()
     db.refresh(source)

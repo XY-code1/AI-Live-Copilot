@@ -99,3 +99,7 @@ def test_url_source_records_evidence(monkeypatch):
     assert run["final_url"] == "https://example.com/final"
     assert run["redirect_chain"] == ["https://example.com/a"]
     assert run["snapshot_path"]
+    assert run["requested_url"] == "https://example.com/a"
+    assert run["raw_size_bytes"] == len(b"<html>hi</html>")
+    assert run["cleaned_text_length"] == len("正文")
+    assert run["fetch_duration_ms"] >= 0
